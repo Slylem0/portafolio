@@ -2,6 +2,8 @@ import { useLang } from "@/i18n";
 import { cn } from "@/lib/utils";
 import AsciiOctahedron from "@/components/ascii/AsciiOctahedron";
 import HudFrame, { HudRule } from "@/components/ui/HudFrame";
+import { HintLabel, useCoarsePointer } from "@/components/ui/OmarchyHint";
+import { openOmarchy } from "@/components/omarchy/events";
 
 // Deterministic decoration (no Math.random in render: avoids hydration mismatches).
 const DOTS = Array.from({ length: 40 }, (_, i) => (i % 9 === 4 ? "alert" : i % 7 === 2 ? "phosphor" : "bone"));
@@ -42,6 +44,7 @@ function HudButton({ href, children, primary }: { href: string; children: string
 
 export default function Hero() {
   const { t } = useLang();
+  const coarse = useCoarsePointer();
   const words = t.hero.title.split(" ");
   const first = words.slice(0, -1).join(" ");
   const last = words[words.length - 1];
@@ -115,6 +118,19 @@ export default function Hero() {
             </HudButton>
             <HudButton href="#footer">{t.hero.contact}</HudButton>
           </div>
+
+          <button
+            type="button"
+            data-testid="hero-hint"
+            data-omarchy-hint=""
+            onClick={openOmarchy}
+            className={cn(
+              "mt-4 inline-flex min-h-8 items-center gap-2 font-mono text-[10px] font-bold tracking-widest text-alert/90 transition-colors hover:text-alert md:text-[11px]",
+              focusRing,
+            )}
+          >
+            <HintLabel text={coarse ? t.hero.hintTouch : t.hero.hint} />
+          </button>
 
           <div aria-hidden="true" className="mt-8 hidden items-center gap-3 font-mono text-[10px] tracking-widest text-bone/50 sm:flex">
             <span className="text-base leading-none text-unit">∞</span>

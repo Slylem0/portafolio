@@ -39,6 +39,33 @@ test("language toggle switches hero subtitle to Spanish", async ({ page, isMobil
   await expect(subtitle).toHaveText("Constructor Cloud & Backend");
 });
 
+test("hero shows its own hint button that opens Omarchy Mode", async ({ page }) => {
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  await page.waitForSelector("astro-island[component-url*='OmarchyLoader']:not([ssr])", { state: "attached" });
+  const hint = page.locator("#home").getByTestId("hero-hint");
+  await expect(hint).toBeVisible();
+  await expect(hint).toHaveAccessibleName("⚠ EMERGENCY — PRESS SUPER");
+  await hint.click();
+  await expect(page.getByTestId("omarchy")).toBeVisible();
+});
+
+test.describe("touch devices", () => {
+  test.use({ hasTouch: true });
+
+  test("coarse pointer shows the tap variant of the hint (EN and ES)", async ({ page, isMobile }) => {
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    expect(await page.evaluate(() => matchMedia("(pointer: coarse)").matches)).toBe(true);
+    await expect(page.getByTestId("omarchy-hint")).toHaveText("⚠ EMERGENCY — TAP TO ENGAGE");
+    await expect(page.getByTestId("hero-hint")).toHaveText("⚠ EMERGENCY — TAP TO ENGAGE");
+    if (isMobile) await page.getByRole("button", { name: "MENU" }).click();
+    await page.getByRole("button", { name: /LANG/ }).click();
+    await expect(page.getByTestId("omarchy-hint")).toHaveText("⚠ EMERGENCIA — TOCA PARA ACTIVAR");
+    await expect(page.getByTestId("hero-hint")).toHaveText("⚠ EMERGENCIA — TOCA PARA ACTIVAR");
+  });
+});
+
 test("hint click dispatches omarchy:open", async ({ page }) => {
   await page.goto("/");
   await page.waitForLoadState("networkidle");

@@ -3,40 +3,15 @@ import { useLang } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { openOmarchy } from "@/components/omarchy/events";
 import { SECTIONS as ITEMS } from "@/data/sections";
+import { HintLabel, useCoarsePointer } from "@/components/ui/OmarchyHint";
 
 const focusRing =
   "outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-phosphor";
 
-/** Four-square Super/Windows key glyph (JetBrains Mono has no "⊞"). */
-function SuperKey() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 12 12" className="inline-block size-[1.1em] shrink-0 align-[-0.15em]">
-      <rect x="0.5" y="0.5" width="11" height="11" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1" />
-      <rect x="3" y="3" width="2.6" height="2.6" fill="currentColor" />
-      <rect x="6.4" y="3" width="2.6" height="2.6" fill="currentColor" />
-      <rect x="3" y="6.4" width="2.6" height="2.6" fill="currentColor" />
-      <rect x="6.4" y="6.4" width="2.6" height="2.6" fill="currentColor" />
-    </svg>
-  );
-}
-
-/** Renders the dictionary hint copy, swapping the "⊞" glyph for the SVG key. */
-function HintLabel({ text }: { text: string }) {
-  const [before, after] = text.split("⊞");
-  if (after === undefined) return <>{text}</>;
-  return (
-    <>
-      {/* The spaces live inside the spans so the content-derived name reads "… PRESS SUPER". */}
-      <span>{before.trimEnd()} </span>
-      <SuperKey />
-      <span> {after.trimStart()}</span>
-    </>
-  );
-}
-
 export default function Navbar() {
   const { lang, t, setLang } = useLang();
   const [open, setOpen] = useState(false);
+  const coarse = useCoarsePointer();
 
   // Close the mobile panel on Escape or when the viewport grows past the breakpoint.
   useEffect(() => {
@@ -125,13 +100,14 @@ export default function Navbar() {
           <button
             type="button"
             data-testid="omarchy-hint"
+            data-omarchy-hint=""
             onClick={openOmarchy}
             className={cn(
               "hint-blink group relative flex h-8 w-full items-center justify-center gap-2 px-3 font-mono text-[10px] font-bold tracking-widest whitespace-nowrap text-alert transition-colors hover:bg-alert hover:text-bg lg:w-auto lg:border lg:border-alert/70 lg:text-[11px]",
               focusRing,
             )}
           >
-            <HintLabel text={t.nav.hint} />
+            <HintLabel text={coarse ? t.nav.hintTouch : t.nav.hint} />
           </button>
         </div>
       </nav>

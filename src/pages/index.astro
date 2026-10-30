@@ -31,7 +31,7 @@ import OmarchyLoader from "@/components/omarchy/OmarchyLoader";
       document.addEventListener(
         "click",
         function (e) {
-          var hint = e.target && e.target.closest && e.target.closest('[data-testid="omarchy-hint"]');
+          var hint = e.target && e.target.closest && e.target.closest("[data-omarchy-hint]");
           if (hint && hint.closest("astro-island[ssr]")) {
             window[K] = true;
             window.dispatchEvent(new Event("omarchy:open"));
