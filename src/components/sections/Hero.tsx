@@ -8,7 +8,7 @@ const DOTS = Array.from({ length: 40 }, (_, i) => (i % 9 === 4 ? "alert" : i % 7
 const BARS = [40, 75, 55, 95, 35, 80, 60, 45];
 
 const focusRing =
-  "outline-none focus-visible:ring-2 focus-visible:ring-phosphor focus-visible:ring-offset-2 focus-visible:ring-offset-bg";
+  "outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-phosphor";
 
 function HudButton({ href, children, primary }: { href: string; children: string; primary?: boolean }) {
   return (
@@ -52,13 +52,13 @@ export default function Hero() {
       aria-labelledby="hero-title"
       className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-bg pt-20 lg:pt-14"
     >
-      {/* ASCII octahedron background: right side on desktop, full bleed (dimmed) on mobile */}
+      {/* ASCII octahedron background: right side on desktop, full width above the title on mobile */}
       <div aria-hidden="true" className="absolute inset-0 -z-10">
-        <div className="absolute inset-x-0 top-[7.5rem] h-[34svh] opacity-70 md:inset-y-0 md:left-auto md:top-0 md:h-auto md:w-[62%] md:opacity-50 lg:w-[58%] lg:opacity-100">
+        <div className="absolute inset-x-0 top-[7.5rem] h-[34svh] md:inset-y-0 md:left-auto md:top-0 md:h-auto md:w-[62%] md:opacity-50 lg:w-[58%] lg:opacity-100">
           <AsciiOctahedron variant="hero" />
         </div>
-        {/* Contrast veil behind the title block */}
-        <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/80 to-transparent md:w-3/5 md:bg-gradient-to-r md:via-bg/60" />
+        {/* Contrast veil behind the title block (on mobile it stays clear of the octahedron above the title) */}
+        <div className="absolute inset-0 bg-gradient-to-t from-bg from-35% via-bg/80 via-48% to-transparent to-60% md:w-3/5 md:bg-gradient-to-r md:from-0% md:via-bg/60 md:via-50% md:to-100%" />
         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-bg to-transparent" />
       </div>
 

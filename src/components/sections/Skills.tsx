@@ -19,7 +19,7 @@ export default function Skills() {
   return (
     <section id="skills" aria-labelledby="skills-title" className="relative overflow-hidden bg-bg py-16 md:py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-8 lg:px-12">
-        <HudRule index="002" label={t.skills.subtitle} className="mb-8" />
+        <HudRule index="002" label={t.nav.skills.replace(/^\d+\s*/, "")} className="mb-8" />
 
         <div className="mb-8 flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
           <h2
@@ -46,7 +46,7 @@ export default function Skills() {
                 key={group.id}
                 role="group"
                 aria-labelledby={headingId}
-                className="relative min-w-0 border border-bone/20 bg-[#0b0b10]"
+                className="relative min-w-0 border border-bone/20 bg-panel"
               >
                 <HudCorners className="size-3 border-bone/50 lg:size-4" />
                 {/* Warning-stripe header with a black label plate */}

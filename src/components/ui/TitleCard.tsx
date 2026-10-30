@@ -6,6 +6,8 @@ interface TitleCardProps {
   episode: string;
   /** Big title; each word is set on its own line, episode-card style. */
   title: string;
+  /** Total number of episodes, shown as "01 / 04" in the HUD line. */
+  total: number;
   /** id for the heading so a section can reference it with aria-labelledby. */
   id?: string;
   className?: string;
@@ -16,7 +18,7 @@ interface TitleCardProps {
  * Text is always rendered (SSR, no-JS safe); when JS runs and motion is allowed,
  * entering the viewport triggers a one-shot smash cut (inverted frame + jolt).
  */
-export default function TitleCard({ episode, title, id, className }: TitleCardProps) {
+export default function TitleCard({ episode, title, total, id, className }: TitleCardProps) {
   const [ref, state] = useReveal<HTMLDivElement>(0.35);
   const words = title.split(/\s+/).filter(Boolean);
   const longest = Math.max(...words.map((w) => w.length), 4);
@@ -55,7 +57,7 @@ export default function TitleCard({ episode, title, id, className }: TitleCardPr
         {/* Bottom rule + tiny HUD metadata */}
         <div aria-hidden="true" className="mt-8 flex items-center gap-3 md:mt-12">
           <span className="h-px flex-1 bg-white/60" />
-          <span className="font-mono text-[10px] tracking-[0.3em] text-white/60">{episode.replace(/\D+/g, "") || "01"} / 04</span>
+          <span className="font-mono text-[10px] tracking-[0.3em] text-white/60">{episode.replace(/\D+/g, "") || "01"} / {String(total).padStart(2, "0")}</span>
           <span className="h-px w-10 bg-alert" />
         </div>
       </div>

@@ -33,13 +33,12 @@ export default function Sessions() {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-8 md:py-20 lg:px-12">
-        <div className="grid gap-8 md:grid-cols-2 md:gap-10 xl:grid-cols-3">
+        <ul role="list" className="grid gap-8 md:grid-cols-2 md:gap-10 xl:grid-cols-3">
           {sessions.map((s, i) => (
-            <WantedPoster
+            <li
               key={s.slug}
-              session={s}
-              lang={lang}
               className={cn(
+                "flex min-w-0",
                 TILT[i % TILT.length],
                 // Centre a lone last poster instead of leaving it hanging on the left.
                 i === sessions.length - 1 &&
@@ -47,9 +46,11 @@ export default function Sessions() {
                   "md:col-span-2 md:mx-auto md:w-[calc(50%-1.25rem)] xl:col-span-1 xl:w-auto",
                 i === sessions.length - 1 && sessions.length % 3 === 1 && "xl:col-start-2",
               )}
-            />
+            >
+              <WantedPoster session={s} lang={lang} className="w-full" />
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
   );

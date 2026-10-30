@@ -37,6 +37,7 @@ export default function AsciiOctahedron({ variant = "hero", className = "" }: Pr
     let width = 0, height = 0, dpr = 1, cellW = 10, cellH = 20;
     let raf = 0, last = 0;
     let visible = true;
+    let paused = false; // page made inert by the Omarchy overlay
     let cancelled = false;
     let rx = 0.35, ry = 0;
     let tx = 0, ty = 0, px = 0, py = 0; // pointer tilt target / current
@@ -91,14 +92,14 @@ export default function AsciiOctahedron({ variant = "hero", className = "" }: Pr
 
     const loop = (t: number) => {
       raf = 0;
-      if (!visible || document.hidden) return;
+      if (!visible || paused || document.hidden) return;
       const dt = last ? Math.min(0.05, (t - last) / 1000) : 0;
       last = t;
       draw(dt);
       raf = requestAnimationFrame(loop);
     };
     const start = () => {
-      if (!raf && visible && !document.hidden) { last = 0; raf = requestAnimationFrame(loop); }
+      if (!raf && visible && !paused && !document.hidden) { last = 0; raf = requestAnimationFrame(loop); }
     };
 
     const onPointer = (e: PointerEvent) => {
@@ -108,6 +109,14 @@ export default function AsciiOctahedron({ variant = "hero", className = "" }: Pr
     const onVisibility = () => {
       if (document.hidden) { cancelAnimationFrame(raf); raf = 0; } else start();
     };
+
+    // Omarchy Mode makes the rest of the page inert while it is open: stop drawing under it.
+    const syncInert = () => {
+      paused = canvas.closest("[inert]") !== null;
+      if (paused) { cancelAnimationFrame(raf); raf = 0; } else start();
+    };
+    const mo = new MutationObserver(syncInert);
+    mo.observe(document.body, { attributes: true, attributeFilter: ["inert"], subtree: true });
 
     const ro = new ResizeObserver(() => { resize(); draw(0); });
     ro.observe(parent);
@@ -135,6 +144,7 @@ export default function AsciiOctahedron({ variant = "hero", className = "" }: Pr
       cancelAnimationFrame(raf);
       ro.disconnect();
       io.disconnect();
+      mo.disconnect();
       window.removeEventListener("pointermove", onPointer);
       document.removeEventListener("visibilitychange", onVisibility);
     };

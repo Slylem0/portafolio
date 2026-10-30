@@ -3,7 +3,7 @@ import { profile } from "@/data/profile";
 import { cn } from "@/lib/utils";
 
 const focusRing =
-  "outline-none focus-visible:ring-2 focus-visible:ring-phosphor focus-visible:ring-offset-2 focus-visible:ring-offset-bg";
+  "outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-phosphor";
 
 export default function Footer() {
   const { t } = useLang();
@@ -44,7 +44,7 @@ export default function Footer() {
                 href={l.href}
                 {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 className={cn(
-                  "group flex min-w-0 flex-col gap-1 border border-bone/20 bg-[#0b0b10] px-4 py-3 transition-colors hover:border-amber",
+                  "group flex min-w-0 flex-col gap-1 border border-bone/20 bg-panel px-4 py-3 transition-colors hover:border-amber",
                   focusRing,
                 )}
               >

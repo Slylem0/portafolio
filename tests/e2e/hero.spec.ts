@@ -58,3 +58,24 @@ test("no horizontal overflow on hero", async ({ page }) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   expect(overflow).toBe(false);
 });
+
+test("hero octahedron pauses while Omarchy Mode is open and resumes after", async ({ page }) => {
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  await page.waitForSelector("astro-island[component-url*='OmarchyLoader']:not([ssr])", { state: "attached" });
+  const canvas = page.locator("#home canvas");
+  const frame = () => canvas.evaluate((c: HTMLCanvasElement) => c.toDataURL());
+  const changes = async () => {
+    const a = await frame();
+    await page.waitForTimeout(400);
+    return a !== (await frame());
+  };
+  expect(await changes()).toBe(true);
+  await page.keyboard.press("Control+k");
+  await expect(page.getByTestId("omarchy")).toBeVisible();
+  await page.waitForTimeout(100);
+  expect(await changes()).toBe(false);
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("omarchy")).toHaveCount(0);
+  await expect.poll(changes).toBe(true);
+});

@@ -23,10 +23,22 @@ export function useReveal<T extends Element>(threshold = 0.25) {
   useEffect(() => {
     const el = ref.current;
     if (!el || typeof IntersectionObserver === "undefined" || prefersReducedMotion()) return;
-    setState("armed");
+    // The first callback reports the state at hydration: if the element is already in view
+    // it stays static (arming it would flash full → empty → refill). Only arm when off-screen.
+    let first = true;
     const io = new IntersectionObserver(
       (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
+        const hit = entries.some((e) => e.isIntersecting);
+        if (first) {
+          first = false;
+          if (hit) {
+            io.disconnect();
+            return;
+          }
+          setState("armed");
+          return;
+        }
+        if (hit) {
           setState("revealed");
           io.disconnect();
         }

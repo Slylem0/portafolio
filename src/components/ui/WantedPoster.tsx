@@ -10,7 +10,7 @@ interface WantedPosterProps {
 }
 
 const focusRing =
-  "outline-none focus-visible:ring-2 focus-visible:ring-jazz focus-visible:ring-offset-2 focus-visible:ring-offset-bone";
+  "outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-jazz";
 
 /**
  * Bounty-poster card for one project: aged paper, Bebas Neue type, no artwork.
@@ -59,7 +59,7 @@ export default function WantedPoster({ session, lang, className }: WantedPosterP
       <h3 id={nameId} className="mt-4 font-bebop text-3xl leading-none tracking-wide sm:text-[2rem]">
         {session.name}
       </h3>
-      <p className="mt-2 font-mono text-[13px] leading-relaxed text-[#2e2a22]">{session.pitch[lang]}</p>
+      <p className="mt-2 font-mono text-[13px] leading-relaxed text-ink-soft">{session.pitch[lang]}</p>
 
       {/* Stack chips */}
       <div className="mt-4">
@@ -89,7 +89,7 @@ export default function WantedPoster({ session, lang, className }: WantedPosterP
       <footer className="mt-auto flex flex-wrap items-end justify-between gap-3 pt-5">
         {session.stars !== undefined && (
           <p className="font-bebop text-2xl leading-none tracking-wider">
-            {t.bounty}: <span className="text-jazz">★ {session.stars}</span>{" "}
+            {t.bounty}: <span className="text-jazz"><span aria-hidden="true">⭐ </span>{session.stars}</span>{" "}
             <span className="font-mono text-[11px] tracking-normal">{t.stars}</span>
           </p>
         )}

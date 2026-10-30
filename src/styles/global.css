@@ -15,6 +15,11 @@
   --motion: 1;
   /* unit tint that keeps small text >= 4.5:1 on --bg */
   --unit-soft: color-mix(in srgb, var(--unit), var(--bone) 35%);
+  /* raised dark surface for cards and link plates */
+  --panel: #0b0b10;
+  /* poster ink on bone paper (body copy uses the softer ink, still >= 7:1) */
+  --ink: #1c1810;
+  --ink-soft: #2e2a22;
 
   /* shadcn semantic tokens mapped to the palette (dark-only site) */
   --background: var(--bg);
@@ -67,6 +72,9 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-unit-soft: var(--unit-soft);
+  --color-panel: var(--panel);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-border: var(--border);
@@ -150,7 +158,6 @@
 
 /* Aged bounty-poster paper: bone base, faint foxing stains, darkened edges. Kept light so ink text stays >= 7:1. */
 .paper {
-  --ink: #1c1810;
   color: var(--ink);
   background-color: var(--bone);
   background-image:

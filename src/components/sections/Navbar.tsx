@@ -2,11 +2,10 @@ import { useEffect, useState } from "react";
 import { useLang } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { openOmarchy } from "@/components/omarchy/events";
-
-const ITEMS = ["home", "about", "skills", "sessions", "log"] as const;
+import { SECTIONS as ITEMS } from "@/data/sections";
 
 const focusRing =
-  "outline-none focus-visible:ring-2 focus-visible:ring-phosphor focus-visible:ring-offset-2 focus-visible:ring-offset-bg";
+  "outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-phosphor";
 
 /** Four-square Super/Windows key glyph (JetBrains Mono has no "⊞"). */
 function SuperKey() {
@@ -27,9 +26,10 @@ function HintLabel({ text }: { text: string }) {
   if (after === undefined) return <>{text}</>;
   return (
     <>
-      <span>{before.trimEnd()}</span>
+      {/* The spaces live inside the spans so the content-derived name reads "… PRESS SUPER". */}
+      <span>{before.trimEnd()} </span>
       <SuperKey />
-      <span>{after.trimStart()}</span>
+      <span> {after.trimStart()}</span>
     </>
   );
 }
@@ -125,7 +125,6 @@ export default function Navbar() {
           <button
             type="button"
             data-testid="omarchy-hint"
-            aria-label={t.nav.hint.replace(/\s*⊞\s*/, " ")}
             onClick={openOmarchy}
             className={cn(
               "hint-blink group relative flex h-8 w-full items-center justify-center gap-2 px-3 font-mono text-[10px] font-bold tracking-widest whitespace-nowrap text-alert transition-colors hover:bg-alert hover:text-bg lg:w-auto lg:border lg:border-alert/70 lg:text-[11px]",

@@ -1,6 +1,7 @@
 import { useLang } from "@/i18n";
 import { profile } from "@/data/profile";
 import TitleCard from "@/components/ui/TitleCard";
+import { EPISODE_COUNT } from "@/data/sections";
 import { HudCorners, HudRule } from "@/components/ui/HudFrame";
 
 export default function About() {
@@ -19,7 +20,7 @@ export default function About() {
 
   return (
     <section id="about" aria-labelledby="about-title" className="relative bg-bg">
-      <TitleCard id="about-title" episode={episode.trim()} title={title} />
+      <TitleCard id="about-title" episode={episode.trim()} title={title} total={EPISODE_COUNT} />
 
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-8 md:py-24 lg:grid-cols-[1.35fr_1fr] lg:gap-14 lg:px-12">
         {/* Story */}
@@ -42,7 +43,7 @@ export default function About() {
         <aside
           data-testid="pilot-dossier"
           aria-labelledby="dossier-title"
-          className="relative min-w-0 self-start border border-bone/20 bg-[#0b0b10]"
+          className="relative min-w-0 self-start border border-bone/20 bg-panel"
         >
           <HudCorners className="size-4 border-alert/70 lg:size-5" />
           <div className="flex items-stretch border-b border-bone/20">
@@ -50,7 +51,7 @@ export default function About() {
             <h3 id="dossier-title" className="flex-1 px-4 py-3 font-mono text-xs font-bold tracking-[0.3em] text-alert">
               {t.about.dossier}
             </h3>
-            <span aria-hidden="true" className="flex items-center px-4 font-mono text-[10px] tracking-widest text-bone/50">
+            <span aria-hidden="true" className="flex items-center px-4 font-mono text-[10px] tracking-widest text-bone/60">
               001
             </span>
           </div>
@@ -67,7 +68,7 @@ export default function About() {
               </div>
             ))}
           </dl>
-          <div aria-hidden="true" className="flex items-center gap-2 border-t border-bone/20 px-4 py-2.5 font-mono text-[9px] tracking-widest text-bone/50">
+          <div aria-hidden="true" className="flex items-center gap-2 border-t border-bone/20 px-4 py-2.5 font-mono text-[9px] tracking-widest text-bone/60">
             <span className="size-1.5 bg-phosphor" />
             <span>{t.hero.coords}</span>
           </div>
