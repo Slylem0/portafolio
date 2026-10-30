@@ -64,6 +64,9 @@ export const es: Dict = {
     stack: "STACK",
     stars: "estrellas",
     bounty: "RECOMPENSA",
+    wanted: "SE BUSCA",
+    alive: "VIVO · ENTREGADO · EN ÓRBITA",
+    newTab: "(se abre en una pestaña nueva)",
   },
   log: {
     title: "BITÁCORA DE MISIÓN",
@@ -74,6 +77,8 @@ export const es: Dict = {
     linkedin: "LinkedIn",
     email: "Correo",
     farewell: "SEE YOU SPACE BUILDER...",
+    channel: "CANAL ABIERTO",
+    end: "FIN DE LA TRANSMISIÓN",
   },
   omarchy: {
     pattern: "PATRÓN DETECTADO: CONSTRUCTOR",

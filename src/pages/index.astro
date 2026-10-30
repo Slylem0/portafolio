@@ -4,6 +4,9 @@ import Navbar from "@/components/sections/Navbar";
 import Hero from "@/components/sections/Hero";
 import About from "@/components/sections/About";
 import Skills from "@/components/sections/Skills";
+import Sessions from "@/components/sections/Sessions";
+import MissionLog from "@/components/sections/MissionLog";
+import Footer from "@/components/sections/Footer";
 ---
 
 <Base
@@ -15,9 +18,8 @@ import Skills from "@/components/sections/Skills";
     <Hero client:load />
     <About client:visible />
     <Skills client:visible />
-    {/* Remaining section anchors; content lands in Task 6. */}
-    <section id="sessions" aria-label="Sessions"></section>
-    <section id="log" aria-label="Log"></section>
+    <Sessions client:visible />
+    <MissionLog client:visible />
   </main>
-  <footer id="footer"></footer>
+  <Footer client:visible />
 </Base>

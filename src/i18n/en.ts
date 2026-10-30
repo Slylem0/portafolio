@@ -62,6 +62,9 @@ export const en = {
     stack: "STACK",
     stars: "stars",
     bounty: "BOUNTY",
+    wanted: "WANTED",
+    alive: "ALIVE · SHIPPED · IN ORBIT",
+    newTab: "(opens in a new tab)",
   },
   log: {
     title: "MISSION LOG",
@@ -72,6 +75,8 @@ export const en = {
     linkedin: "LinkedIn",
     email: "Email",
     farewell: "SEE YOU SPACE BUILDER...",
+    channel: "OPEN CHANNEL",
+    end: "END OF TRANSMISSION",
   },
   omarchy: {
     pattern: "PATTERN DETECTED: BUILDER",

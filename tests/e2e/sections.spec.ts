@@ -64,3 +64,70 @@ test("no horizontal overflow on about and skills", async ({ page }) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   expect(overflow).toBe(false);
 });
+
+test("7 wanted posters with session numbers", async ({ page }) => {
+  await page.goto("/");
+  const sessions = page.locator("#sessions");
+  await expect(sessions.getByRole("heading", { level: 2 })).toContainText("SESSIONS");
+  const posters = sessions.getByTestId("wanted-poster");
+  await expect(posters).toHaveCount(7);
+  for (let i = 0; i < 7; i++) {
+    const poster = posters.nth(i);
+    await expect(poster).toContainText("WANTED");
+    await expect(poster).toContainText(`SESSION #0${i + 1}`);
+  }
+  await expect(posters.nth(1)).toContainText("Grandma's Bouncer");
+  await expect(posters.nth(5)).toContainText("11");
+});
+
+test("shaggy barber shows in production prep", async ({ page }) => {
+  await page.goto("/");
+  const shaggy = page.locator("#sessions").getByTestId("wanted-poster").first();
+  await expect(shaggy).toContainText("Shaggy Barber");
+  await expect(shaggy).toContainText(
+    "STATUS: IN PRODUCTION PREP · frontend live, serverless backend in progress",
+  );
+});
+
+test("mission log renders timeline entries", async ({ page }) => {
+  await page.goto("/");
+  const log = page.locator("#log");
+  await expect(log.getByRole("heading", { level: 2 })).toContainText("MISSION LOG");
+  await expect(log.getByRole("listitem")).toHaveCount(7);
+  await expect(log).toContainText("AWS Certified Cloud Practitioner");
+});
+
+test("footer has github, linkedin, email links and sign-off", async ({ page }) => {
+  await page.goto("/");
+  const footer = page.locator("footer#footer");
+  await expect(footer.getByRole("link", { name: /GitHub/ })).toHaveAttribute("href", "https://github.com/Slylem0");
+  await expect(footer.getByRole("link", { name: /LinkedIn/ })).toHaveAttribute(
+    "href",
+    "https://www.linkedin.com/in/pablo-nicolas-marin",
+  );
+  await expect(footer.getByRole("link", { name: /Email/ })).toHaveAttribute(
+    "href",
+    "mailto:pnicolasmarin2007@gmail.com",
+  );
+  await expect(footer).toContainText("SEE YOU SPACE BUILDER...");
+});
+
+test("every external link has rel noopener", async ({ page }) => {
+  await page.goto("/");
+  const external = page.locator('a[href^="http"]');
+  expect(await external.count()).toBeGreaterThanOrEqual(10);
+  for (const a of await external.all()) {
+    await expect(a).toHaveAttribute("target", "_blank");
+    await expect(a).toHaveAttribute("rel", /noopener/);
+  }
+});
+
+test("no horizontal overflow on sessions, log and footer", async ({ page }) => {
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  for (const sel of ["#sessions", "#log", "#footer"]) {
+    await page.locator(sel).scrollIntoViewIfNeeded();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+    expect(overflow, sel).toBe(false);
+  }
+});
