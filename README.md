@@ -71,7 +71,7 @@ flowchart LR
 Request flow for a TRIAD question:
 
 1. The browser sends `POST { question, lang }` to the Lambda Function URL. It has an 8 s budget; past that it switches to local mode.
-2. The Lambda checks the input (trimmed, 1–200 characters, `en` or `es`). Then it increments a DynamoDB counter keyed by `HMAC(ip) + hour`. Past 10 requests in that hour, it returns 429.
+2. The Lambda checks the input (trimmed, 1–200 characters, `en` or `es`). Then it increments a DynamoDB counter keyed by `HMAC(ip) + hour`; past 30 requests in that hour it returns 429 `rate_limited`. Next it increments a global counter `global:<hour>`; past 300 requests per hour from everyone it returns 429 `busy`. The browser then shows "QUOTA REACHED — LOCAL MODE" and answers from its local pool.
 3. One Bedrock `Converse` call to Nova Lite. The system prompt holds my profile and the three personas, and the model must return JSON.
 4. The Lambda parses the JSON leniently. If the reply isn't usable, it retries once at temperature 0.2, but only if that retry can still finish inside the browser's budget. **The verdict is computed in code from the three votes and never taken from the model.** The browser recomputes it again.
 5. The Lambda writes one structured log line (`status`, `qLen`, `lang`, `retried`, `ms`) and never logs the question text.
@@ -85,18 +85,18 @@ The whole backend is code in [`amplify/backend.ts`](amplify/backend.ts) (Amplify
 | **AWS Amplify Hosting** | Serves the static Astro build over a global CDN with HTTPS. CI/CD from GitHub: each push to `main` runs the backend phase (`ampx pipeline-deploy`) and then the frontend build. | One pipeline deploys both the site and the backend from one repo. |
 | **AWS Lambda** | The `triad` function: Node.js 22, 256 MB, 15 s timeout, exposed through a Function URL. CORS allows only the site origin (plus localhost for development) and only `POST`. | TRIAD needs a few hundred calls, not a server. A Function URL removes the need for API Gateway. |
 | **Amazon Bedrock** | Amazon Nova Lite via the Converse API, through the cross-region inference profile `us.amazon.nova-lite-v1:0`, with `maxTokens` 300. | It's fast and cheap, and good enough for three short lines of JSON. |
-| **Amazon DynamoDB** | A `TriadUsage` table (on-demand) holding a counter per hashed IP per hour. One atomic `UpdateItem ... ADD` per request, and TTL deletes items after 2 h. | Rate limiting with no servers, almost no cost, and no raw IPs stored. |
+| **Amazon DynamoDB** | A `TriadUsage` table (on-demand) holding a counter per hashed IP per hour, plus one global counter per hour. Two atomic `UpdateItem ... ADD` per request (per IP, then global), and TTL deletes items after 2 h. | Rate limiting with no servers, almost no cost, and no raw IPs stored. |
 | **AWS IAM** | The Lambda role can call `bedrock:InvokeModel` on the two Nova Lite ARNs (inference profile and foundation model) and `dynamodb:UpdateItem` on that one table. Nothing else besides basic logging. | Least privilege: if the function is abused, the damage is limited to these permissions. |
-| **Amazon CloudWatch Logs** | One JSON line per request, for example `{"event":"triad","status":200,"qLen":18,"lang":"en","retried":false,"ms":1317}`. | I can debug status codes and latency without storing what visitors asked. |
+| **Amazon CloudWatch Logs** | Log group kept for 2 weeks. One JSON line per request, for example `{"event":"triad","status":200,"qLen":18,"lang":"en","retried":false,"ms":1317}`. | I can debug status codes and latency without storing what visitors asked. |
 | **AWS Budgets** | Planned: a USD 5/month cost alert, set up before submission (see the checklist below). | It will alert me by email before a mistake becomes a bill. |
 
 ## Cost and security guards
 
-- **Rate limit:** 10 TRIAD requests per IP per hour (DynamoDB counter). Visitor IPs are hashed with HMAC-SHA256 and a per-deploy random salt before storage.
+- **Rate limits:** 30 TRIAD requests per IP per hour (room for several people behind one shared NAT), and a global ceiling of 300 requests per hour across all callers (DynamoDB counters). Visitor IPs are hashed with HMAC-SHA256 and a per-deploy random salt before storage.
 - **Bounded model cost:** questions are capped at 200 characters and answers at 300 tokens. One Bedrock call per request, plus at most one retry inside the same rate-limit slot.
 - **Bounded runtime:** the Lambda times out at 15 s and the browser gives up at 8 s.
 - **Concurrency:** the code reserves 5 concurrent executions for the function. New AWS accounts start with an account-wide Lambda limit of 10, and Lambda requires 10 to stay unreserved, so this account can't reserve any. The Amplify branch sets `TRIAD_RESERVED_CONCURRENCY=0` to skip the reservation, and the account limit of 10 then caps the function. After a quota increase (Service Quotas `L-B99A9384`), deleting that variable restores the cap of 5.
-- **CORS:** only the site origin and local dev origins. No wildcard.
+- **CORS:** only the site origin and local dev origins, no wildcard. CORS limits browser callers to the site's origin; the rate limits (per IP and global) guard everyone else.
 - **Prompt injection:** the question is wrapped in `<question>` tags with `<` and `>` stripped. The model's output is validated against a strict shape, and its lines are rendered as plain text, never HTML.
 - **Privacy:** no question text in logs and no raw IPs in DynamoDB.
 

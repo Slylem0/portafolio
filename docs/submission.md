@@ -75,11 +75,11 @@ Everything runs in **us-east-1**, and the backend is defined as code with Amplif
 | Service | What it does here | Why I chose it |
 |---|---|---|
 | **AWS Amplify Hosting** | Hosts the static site on a CDN with HTTPS. Each push to `main` deploys the backend first (`ampx pipeline-deploy`), then builds the frontend. | One pipeline and one repo for both front and back. |
-| **AWS Lambda** | The `triad` function: Node.js 22, 15 s timeout. It is exposed through a Function URL, with CORS locked to the site origin and POST only. | Pay per request, and no API Gateway needed for a single endpoint. |
+| **AWS Lambda** | The `triad` function: Node.js 22, 15 s timeout. It is exposed through a Function URL that accepts only POST. CORS limits browser callers to the site's origin; the rate limits (per IP and global) guard everyone else. | Pay per request, and no API Gateway needed for a single endpoint. |
 | **Amazon Bedrock** | Amazon Nova Lite via the Converse API, using the cross-region inference profile `us.amazon.nova-lite-v1:0`, with `maxTokens` 300. | It's fast and low-cost, which is enough for three short JSON answers. |
-| **Amazon DynamoDB** | Rate limit of 10 questions per IP per hour. The key is an HMAC of the IP plus the hour, so no raw IPs are stored, and TTL deletes items after 2 h. | One atomic `UpdateItem` per request, on-demand billing, and nothing to clean up. |
+| **Amazon DynamoDB** | Rate limits: 30 questions per IP per hour (room for a group behind one shared NAT) and 300 per hour for everyone together. The per-IP key is an HMAC of the IP plus the hour, so no raw IPs are stored, and TTL deletes items after 2 h. | Atomic `UpdateItem` counters, on-demand billing, and nothing to clean up. |
 | **AWS IAM** | The function's role allows `bedrock:InvokeModel` on the two Nova Lite ARNs and `dynamodb:UpdateItem` on the one table. | Least privilege by design. |
-| **Amazon CloudWatch Logs** | One JSON line per request: status, question length, language, whether it retried, and latency. | Enough to debug, without keeping what people asked. |
+| **Amazon CloudWatch Logs** | One JSON line per request: status, question length, language, whether it retried, and latency. Logs are kept for 2 weeks. | Enough to debug, without keeping what people asked. |
 | **AWS Budgets** | Planned: a USD 5/month alert, set up before submission. | A safety net under all the other limits. |
 
 There are more limits in code:
@@ -102,7 +102,7 @@ I worked the way I'd want a real project to run:
    - the Lambda's parser and rate limiter
    - the TRIAD client's fallbacks
 4. **Review after every task.** Each task got a review pass against the spec, and the fixes went in before the next task started.
-5. **Deploy continuously.** The site was live on Amplify from the first days, and the backend joined the same pipeline once TRIAD existed. Before wiring TRIAD to the main branch, I tested it on a personal `ampx sandbox` with real Bedrock calls: CORS from an allowed and a blocked origin, the 10-per-hour limit, and the log contents.
+5. **Deploy continuously.** The site was live on Amplify from the first days, and the backend joined the same pipeline once TRIAD existed. Before wiring TRIAD to the main branch, I tested it on a personal `ampx sandbox` with real Bedrock calls: CORS from an allowed and a blocked origin, the per-IP limit (then 10 per hour; I later raised it to 30 so judges behind one shared NAT don't lock each other out), and the log contents.
 
 I built it with an AI coding agent (Claude Code), as the challenge's Day 2 guide, "Connect your coding agent", suggests. I directed the design, made the calls, and checked every result.
 
@@ -110,7 +110,7 @@ I built it with an AI coding agent (Claude Code), as the challenge's Day 2 guide
 
 **1. The build image's Node was too old.**
 
-- **Problem:** Amplify's build image shipped Node 22.18, but Astro 7 needs Node 22.23 or newer, so the first build failed.
+- **Problem:** Amplify's build image shipped Node 22.18, but Astro 7 needs Node 22.23.4 or newer, so the first build failed.
 - **Fix:** I pinned Node 24 with `nvm install 24 && nvm use 24` in `amplify.yml`, and in `.nvmrc`.
 - **Lesson:** pin your runtime in the build spec. Don't trust the image default.
 
@@ -171,7 +171,7 @@ I built it with an AI coding agent (Claude Code), as the challenge's Day 2 guide
 - **Backend behavior:**
   - Production backend verified live: the deployed Function URL, called from the site origin with a Spanish question, returned 200 with three cores in about 1 s and `Access-Control-Allow-Origin` set to the site.
   - On the sandbox, a Bedrock-backed answer took about 0.7–1.3 s.
-  - The 11th request from one IP in an hour got a 429.
+  - With the earlier limit of 10 per IP per hour, the 11th request from one IP got a 429. The limit is now 30 per IP plus a global 300 per hour, and a 429 shows "QUOTA REACHED — LOCAL MODE" in the browser.
   - A request from a non-allowed origin got no CORS headers.
 - **Accessibility:**
   - every control is reachable by keyboard with a visible focus outline
