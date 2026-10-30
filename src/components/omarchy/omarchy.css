@@ -102,7 +102,39 @@
 }
 .om-fade { opacity: 0; transition: opacity 300ms ease-out; }
 
+/* TRIAD: hexagon cores (ring + face) that light up with their vote colour. */
+.triad-hex { display: block; transition: filter 300ms ease-out; }
+.triad-hex-ring {
+  display: grid;
+  width: 4.6rem;
+  height: 4rem;
+  padding: 2px;
+  background: var(--core);
+  transition: background-color 300ms ease-out;
+}
+.triad-hex-face {
+  display: grid;
+  place-items: center;
+  background: var(--om-win-bg);
+}
+.triad-core.is-lit .triad-hex { filter: drop-shadow(0 0 10px var(--core)); }
+.triad-core.is-lit .triad-hex-face {
+  background: color-mix(in srgb, var(--core), var(--om-win-bg) 84%);
+  animation: triad-lit 420ms ease-out;
+}
+@keyframes triad-lit {
+  from { background: color-mix(in srgb, var(--core), var(--om-win-bg) 30%); }
+}
+.triad-banner { animation: triad-banner 380ms var(--om-ease); }
+@keyframes triad-banner {
+  from { opacity: 0; letter-spacing: 0.4em; }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .triad-hex,
+  .triad-hex-ring,
+  .triad-core.is-lit .triad-hex-face,
+  .triad-banner,
   .om-win,
   .om-ws,
   .om-win-new,

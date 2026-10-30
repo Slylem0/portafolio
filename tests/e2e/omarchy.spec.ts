@@ -315,3 +315,104 @@ test.describe("mobile", () => {
     await expect(page.getByRole("group", { name: "Sessions" })).toBeVisible();
   });
 });
+
+test.describe("TRIAD", () => {
+  const FAKE = "https://triad.e2e.test/";
+  const valid = {
+    cores: [
+      { id: "ENGINEER", vote: "YES", line: "Go compiles fast and deploys as one binary." },
+      { id: "COWBOY", vote: "NO", line: "Whatever happens, happens — <b>not today</b>." },
+      { id: "STUDENT", vote: "YES", line: "New language, new notes. I'm in." },
+    ],
+    verdict: "APPROVED",
+  };
+
+  test.beforeEach(async ({ page }) => {
+    // Inject a fake backend URL so page.route can intercept it (see triadClient.resolveTriadUrl).
+    await page.addInitScript((u) => ((window as unknown as { __TRIAD_URL__: string }).__TRIAD_URL__ = u), FAKE);
+  });
+
+  async function openTriad(page: Page, isMobile: boolean) {
+    if (isMobile) {
+      await gotoReady(page);
+      await page.getByTestId("omarchy-hint").click();
+      await page.getByTestId("omarchy-boot").click();
+      await expect(page.getByTestId("omarchy-topbar")).toBeVisible({ timeout: 1000 });
+    } else await openDesktop(page);
+    if (isMobile) await page.getByTestId("omarchy-dock").getByRole("button", { name: /TRIAD/ }).click();
+    else await page.getByTestId("omarchy-topbar").locator("[data-workspace='4']").click();
+    await expect(page.getByTestId("triad")).toBeVisible();
+  }
+
+  test("TRIAD answers offline when backend unreachable and button disables while pending", async ({ page, isMobile }) => {
+    let calls = 0;
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    await page.route(`${FAKE}**`, async (route) => {
+      if (route.request().method() === "POST") calls++;
+      await gate;
+      await route.abort("connectionrefused");
+    });
+    await openTriad(page, isMobile);
+    await page.getByTestId("triad-input").fill("Should I learn Go next?");
+    const submit = page.getByTestId("triad-submit");
+    await submit.dblclick();
+    await expect(submit).toBeDisabled();
+    await expect(page.getByTestId("triad-status")).toBeVisible();
+    await page.keyboard.press("Enter"); // also ignored while pending
+    release();
+    await expect(page.getByTestId("triad-offline")).toHaveText("LINK LOST — LOCAL MODE");
+    await expect(page.getByTestId("triad-resolution")).toHaveText(/^RESOLUTION: (APPROVED|REJECTED) [0-3]–[0-3]$/);
+    await expect(page.getByTestId("triad-core").and(page.locator("[data-vote='YES'], [data-vote='NO']"))).toHaveCount(3);
+    await expect(submit).toBeEnabled();
+    expect(calls).toBe(1);
+  });
+
+  test("TRIAD shows the backend verdict with cores revealed in order", async ({ page, isMobile }) => {
+    const bodies: unknown[] = [];
+    await page.route(`${FAKE}**`, async (route) => {
+      bodies.push(route.request().postDataJSON());
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        headers: { "access-control-allow-origin": "*" },
+        body: JSON.stringify(valid),
+      });
+    });
+    await openTriad(page, isMobile);
+    await page.getByTestId("triad-example").first().click();
+    await expect(page.getByTestId("triad-input")).toHaveValue("Should I learn Go next?");
+    const cores = page.getByTestId("triad-core");
+    await expect(cores.nth(0)).toHaveAttribute("data-vote", "YES");
+    await expect(page.getByTestId("triad-resolution")).toHaveText("RESOLUTION: APPROVED 2–1");
+    await expect(cores.nth(1)).toHaveAttribute("data-vote", "NO");
+    await expect(cores.nth(1)).toContainText("<b>not today</b>"); // model text rendered as text
+    await expect(page.getByTestId("triad-online")).toBeVisible();
+    await expect(page.getByTestId("triad-offline")).toHaveCount(0);
+    expect(bodies).toEqual([{ question: "Should I learn Go next?", lang: "en" }]);
+    // Nothing overflows horizontally inside the window, nor the page.
+    const overflow = await page.getByTestId("triad").evaluate((el) => {
+      const scroller = el.parentElement!;
+      return scroller.scrollWidth > scroller.clientWidth || document.documentElement.scrollWidth > window.innerWidth;
+    });
+    expect(overflow).toBe(false);
+    if (isMobile) {
+      const [a, b] = [await cores.nth(0).boundingBox(), await cores.nth(1).boundingBox()];
+      expect(b!.y).toBeGreaterThan(a!.y + a!.height - 1); // stacked vertically
+    }
+  });
+
+  test("Esc in the TRIAD input clears it; typing digits does not switch workspace", async ({ page, isMobile }) => {
+    test.skip(isMobile, "keyboard shortcuts");
+    await page.route(`${FAKE}**`, (route) => route.abort());
+    await openTriad(page, isMobile);
+    const input = page.getByTestId("triad-input");
+    await input.click();
+    await page.keyboard.type("4 or 5?");
+    await expect(input).toHaveValue("4 or 5?");
+    await expect(activeWorkspace(page)).toHaveAttribute("data-workspace", "4");
+    await page.keyboard.press("Escape");
+    await expect(input).toHaveValue("");
+    await expect(page.getByTestId("omarchy")).toBeVisible();
+  });
+});

@@ -136,10 +136,6 @@ export const es: Dict = {
       bebop: "Bebop",
       omarchy: "Omarchy",
     },
-    triadWin: {
-      title: "TRIAD — conectando",
-      body: "Tres núcleos asesores se están calentando. El espacio 4 recibirá tus preguntas pronto.",
-    },
     terminal: {
       inputLabel: "Comando de terminal",
       title: "Terminal",
@@ -182,5 +178,13 @@ export const es: Dict = {
     linkLost: "LINK LOST — LOCAL MODE",
     tooLong: "Pregunta demasiado larga (máx. 200 caracteres).",
     empty: "Escribe una pregunta primero.",
+    inputLabel: "Pregunta para TRIAD (sí/no, máx. 200 caracteres)",
+    counter: "{n}/200",
+    intro: "Tres núcleos votan SÍ o NO a cualquier pregunta. Gana la mayoría.",
+    examplesLabel: "Prueba:",
+    examples: ["¿Debería aprender Go ahora?", "¿Pablo encaja en una pasantía de cloud?", "¿Piña en la pizza?"],
+    idle: "ESPERANDO CONSULTA",
+    pending: "PENDIENTE",
+    linkOk: "ENLACE ACTIVO — AWS BEDROCK",
   },
 };

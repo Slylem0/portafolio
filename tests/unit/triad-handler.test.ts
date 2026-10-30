@@ -98,4 +98,45 @@ describe("triad handler", () => {
     expect(logged).not.toContain("SECRET-QUESTION");
     expect(logged).not.toContain("9.9.9.9");
   });
+  it("retries once at temperature 0.2 when output is unparseable, then 200", async () => {
+    const converse = vi.fn().mockResolvedValueOnce("garbage").mockResolvedValueOnce(good);
+    const d = deps({ converse });
+    const r: any = await createHandler(d)(ev({ question: "hi" }));
+    expect(r.statusCode).toBe(200);
+    expect(converse).toHaveBeenCalledTimes(2);
+    expect(converse.mock.calls[0][2]).toBeUndefined();
+    expect(converse.mock.calls[1][2]).toMatchObject({ temperature: 0.2 });
+    expect(converse.mock.calls[1][2].timeoutMs).toBeGreaterThanOrEqual(3000);
+    expect(converse.mock.calls[1][2].timeoutMs).toBeLessThanOrEqual(13000);
+    expect(d.db.increment).toHaveBeenCalledTimes(1);
+  });
+  it("502 bad_model_output after two unparseable outputs; one rate-limit increment", async () => {
+    const converse = vi.fn(async () => "garbage");
+    const d = deps({ converse });
+    const r: any = await createHandler(d)(ev({ question: "hi" }));
+    expect(r.statusCode).toBe(502);
+    expect(JSON.parse(r.body).error).toBe("bad_model_output");
+    expect(converse).toHaveBeenCalledTimes(2);
+    expect(d.db.increment).toHaveBeenCalledTimes(1);
+  });
+  it("skips the retry when too little time budget is left", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      const converse = vi.fn(async () => {
+        vi.setSystemTime(Date.now() + 11_000);
+        return "garbage";
+      });
+      const r: any = await createHandler(deps({ converse }))(ev({ question: "hi" }));
+      expect(r.statusCode).toBe(502);
+      expect(converse).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+  it("does not retry when the model call throws", async () => {
+    const converse = vi.fn(async () => { throw new Error("x"); });
+    const r: any = await createHandler(deps({ converse }))(ev({ question: "hi" }));
+    expect(r.statusCode).toBe(502);
+    expect(converse).toHaveBeenCalledTimes(1);
+  });
 });

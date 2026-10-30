@@ -134,10 +134,6 @@ export const en = {
       bebop: "Bebop",
       omarchy: "Omarchy",
     },
-    triadWin: {
-      title: "TRIAD — coming online",
-      body: "Three advisory cores are warming up. Workspace 4 will take your questions soon.",
-    },
     terminal: {
       inputLabel: "Terminal command",
       title: "Terminal",
@@ -180,5 +176,13 @@ export const en = {
     linkLost: "LINK LOST — LOCAL MODE",
     tooLong: "Question too long (max 200 characters).",
     empty: "Type a question first.",
+    inputLabel: "Question for TRIAD (yes/no, max 200 characters)",
+    counter: "{n}/200",
+    intro: "Three cores vote YES or NO on any question. Majority wins.",
+    examplesLabel: "Try:",
+    examples: ["Should I learn Go next?", "Is Pablo a good fit for a cloud internship?", "Pineapple on pizza?"],
+    idle: "AWAITING QUERY",
+    pending: "PENDING",
+    linkOk: "LINK ACTIVE — AWS BEDROCK",
   },
 };

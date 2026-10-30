@@ -6,11 +6,17 @@ import { buildSystemPrompt } from "./prompt";
 import { parseModelOutput, validateQuestion } from "./parse";
 import { checkRateLimit } from "./rateLimit";
 
+export type ConverseOpts = { temperature?: number; timeoutMs?: number };
 export type Deps = {
-  converse(system: string, question: string): Promise<string>;
+  converse(system: string, question: string, opts?: ConverseOpts): Promise<string>;
   db: { increment(key: string, ttl: number): Promise<number> };
   now(): Date;
 };
+
+// Lambda timeout is 15 s; keep the whole request (incl. one retry) under this budget.
+const BUDGET_MS = 13_000;
+// A retry needs at least this much budget left to be worth attempting.
+const MIN_RETRY_MS = 3_000;
 
 const json = (statusCode: number, body: unknown): APIGatewayProxyStructuredResultV2 => ({
   statusCode,
@@ -47,8 +53,14 @@ export function createHandler(deps: Deps) {
     try {
       const ip = event.requestContext?.http?.sourceIp ?? "unknown";
       if (!(await checkRateLimit(deps.db, ip, deps.now()))) return done(429, { error: "rate_limited" });
-      const text = await deps.converse(buildSystemPrompt(input.lang), `<question>${input.question.replace(/[<>]/g, "")}</question>`);
-      const result = parseModelOutput(text);
+      const system = buildSystemPrompt(input.lang);
+      const question = `<question>${input.question.replace(/[<>]/g, "")}</question>`;
+      let result = parseModelOutput(await deps.converse(system, question));
+      // Nova occasionally emits non-JSON; one cooler retry fixes most of those (same rate-limit slot).
+      const left = BUDGET_MS - (Date.now() - t0);
+      if (!result && left >= MIN_RETRY_MS) {
+        result = parseModelOutput(await deps.converse(system, question, { temperature: 0.2, timeoutMs: left }));
+      }
       if (!result) return done(502, { error: "bad_model_output" });
       return done(200, result);
     } catch (err) {
@@ -61,7 +73,7 @@ let bedrock: BedrockRuntimeClient | undefined;
 let ddb: DynamoDBClient | undefined;
 
 export const handler = createHandler({
-  async converse(system, question) {
+  async converse(system, question, opts) {
     bedrock ??= new BedrockRuntimeClient({
       region: "us-east-1",
       maxAttempts: 2,
@@ -72,8 +84,9 @@ export const handler = createHandler({
         modelId: "us.amazon.nova-lite-v1:0",
         system: [{ text: system }],
         messages: [{ role: "user", content: [{ text: question }] }],
-        inferenceConfig: { maxTokens: 300, temperature: 0.7 },
+        inferenceConfig: { maxTokens: 300, temperature: opts?.temperature ?? 0.7 },
       }),
+      opts?.timeoutMs ? { abortSignal: AbortSignal.timeout(opts.timeoutMs) } : undefined,
     );
     return out.output?.message?.content?.map((c) => c.text ?? "").join("") ?? "";
   },
