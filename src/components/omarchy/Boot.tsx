@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { useLang } from "@/i18n";
 import { cn } from "@/lib/utils";
+import { bootKeyAction } from "./shortcuts";
 
 type Phase = "alert" | "log" | "fade" | "static";
 
@@ -8,8 +9,6 @@ const ALERT_MS = 1200;
 const LOG_MS = 1500;
 const FADE_MS = 300;
 const STATIC_MS = 400;
-
-const MODIFIERS = new Set(["Control", "Meta", "Shift", "Alt", "AltGraph", "CapsLock", "OS"]);
 
 /** Splits "[ OK ] message" so the status tag can be coloured. */
 function BootLine({ text }: { text: string }) {
@@ -23,7 +22,7 @@ function BootLine({ text }: { text: string }) {
 }
 
 /** Emergency boot: red hex alert, systemd-style boot log, fade. Any key or tap skips. */
-/** Escape or Ctrl/Cmd+K leaves Omarchy Mode right away; every other key skips to the desktop. */
+/** Escape or Ctrl/Cmd+K leaves Omarchy Mode right away; other keys skip to the desktop (browser shortcuts pass through). */
 export default function Boot({ onDone, onExit, reduced }: { onDone(): void; onExit(): void; reduced: boolean }) {
   const { t } = useLang();
   const [coarse] = useState(() => {
@@ -56,9 +55,10 @@ export default function Boot({ onDone, onExit, reduced }: { onDone(): void; onEx
       timers.push(window.setTimeout(finish, ALERT_MS + LOG_MS + FADE_MS));
     }
     const onKey = (e: KeyboardEvent) => {
-      if (MODIFIERS.has(e.key) || e.isComposing) return;
+      const action = bootKeyAction(e);
+      if (!action) return;
       e.preventDefault();
-      if (e.key === "Escape" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k")) {
+      if (action === "exit") {
         done.current = true;
         exitRef.current();
       } else finish();

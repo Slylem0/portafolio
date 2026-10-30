@@ -54,3 +54,17 @@ function mapKey(key: string, tKey: boolean, shiftDigits = false): Action | null 
       return null;
   }
 }
+
+const BOOT_MODIFIERS = new Set(["Control", "Meta", "Shift", "Alt", "AltGraph", "CapsLock", "OS"]);
+
+/**
+ * Key handling during the boot screen: Escape or Ctrl/Cmd+K exits, other keys skip to the desktop.
+ * Bare modifiers, Ctrl/Cmd combos (reload, devtools, copy…) and F1–F12 pass through to the browser.
+ */
+export function bootKeyAction(e: KeyLike & { isComposing?: boolean }): "exit" | "skip" | null {
+  if (BOOT_MODIFIERS.has(e.key) || e.isComposing) return null;
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") return "exit";
+  if (e.key === "Escape") return "exit";
+  if (e.ctrlKey || e.metaKey || /^F([1-9]|1[0-2])$/.test(e.key)) return null;
+  return "skip";
+}

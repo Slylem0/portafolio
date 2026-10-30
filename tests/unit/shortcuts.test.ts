@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { keyToAction } from "@/components/omarchy/shortcuts";
+import { bootKeyAction, keyToAction } from "@/components/omarchy/shortcuts";
 
 const k = (key: string, m: Partial<{ metaKey: boolean; ctrlKey: boolean; altKey: boolean; shiftKey: boolean }> = {}) =>
   ({ key, metaKey: false, ctrlKey: false, altKey: false, shiftKey: false, ...m });
@@ -72,5 +72,25 @@ describe("keyToAction", () => {
     expect(keyToAction(k("Meta", { metaKey: true }), true)).toBeNull();
     expect(keyToAction(k("P", { ctrlKey: true, shiftKey: true }), true)).toEqual({ type: "displaySwitch" });
     expect(keyToAction(k("1", { ctrlKey: true, shiftKey: true }), true)).toBeNull();
+  });
+});
+
+describe("bootKeyAction", () => {
+  it("Escape and Ctrl/Cmd+K exit", () => {
+    expect(bootKeyAction(k("Escape"))).toBe("exit");
+    expect(bootKeyAction(k("k", { ctrlKey: true }))).toBe("exit");
+    expect(bootKeyAction(k("K", { metaKey: true }))).toBe("exit");
+  });
+  it("plain keys skip", () => {
+    for (const key of ["x", " ", "Enter", "1", "ArrowDown"]) expect(bootKeyAction(k(key))).toBe("skip");
+    expect(bootKeyAction(k("X", { shiftKey: true }))).toBe("skip");
+  });
+  it("browser shortcuts and bare modifiers pass through", () => {
+    expect(bootKeyAction(k("r", { ctrlKey: true }))).toBeNull();
+    expect(bootKeyAction(k("r", { metaKey: true }))).toBeNull();
+    expect(bootKeyAction(k("I", { ctrlKey: true, shiftKey: true }))).toBeNull();
+    for (const f of ["F1", "F5", "F11", "F12"]) expect(bootKeyAction(k(f))).toBeNull();
+    for (const m of ["Control", "Meta", "Shift", "Alt"]) expect(bootKeyAction(k(m))).toBeNull();
+    expect(bootKeyAction({ ...k("a"), isComposing: true })).toBeNull();
   });
 });

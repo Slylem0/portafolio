@@ -187,6 +187,61 @@ test.describe("desktop", () => {
     await expect(page.getByTestId("omarchy")).toHaveCount(0);
   });
 
+  test("LINKING overlay: Esc cancels, a tap cancels, and a 10 s stall shows the error toast", async ({ page }) => {
+    test.setTimeout(45_000);
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    await page.route(/OmarchyMode.*\.js$/, async (route) => {
+      await gate;
+      await route.abort();
+    });
+    await gotoReady(page);
+    const linking = page.getByTestId("omarchy-linking");
+    await page.getByTestId("omarchy-hint").click();
+    await expect(linking).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(linking).toHaveCount(0);
+    await expect(page.getByRole("alert")).toHaveCount(0);
+
+    await page.getByTestId("omarchy-hint").click();
+    await expect(linking).toBeVisible();
+    await linking.click();
+    await expect(linking).toHaveCount(0);
+    await expect(page.getByRole("alert")).toHaveCount(0);
+
+    await page.getByTestId("omarchy-hint").click();
+    await expect(linking).toBeVisible();
+    await expect(page.getByRole("alert")).toContainText("failed to load", { timeout: 12_000 });
+    await expect(linking).toHaveCount(0);
+    await expect(page.getByTestId("omarchy")).toHaveCount(0);
+    // Reset: the next open shows LINKING again.
+    await page.getByTestId("omarchy-hint").click();
+    await expect(linking).toBeVisible();
+    release();
+  });
+
+  test("boot lets browser shortcuts (Ctrl+R, F5, F12) through; plain keys are consumed", async ({ page }) => {
+    await gotoReady(page);
+    await page.keyboard.press("Control+k");
+    await expect(page.getByTestId("omarchy-boot")).toBeVisible();
+    const prevented = await page.evaluate(() =>
+      [
+        { key: "r", ctrlKey: true },
+        { key: "F5" },
+        { key: "F12" },
+        { key: "I", ctrlKey: true, shiftKey: true },
+      ].map((init) => {
+        const ev = new KeyboardEvent("keydown", { ...init, bubbles: true, cancelable: true });
+        window.dispatchEvent(ev);
+        return ev.defaultPrevented;
+      }),
+    );
+    expect(prevented).toEqual([false, false, false, false]);
+    await expect(page.getByTestId("omarchy-boot")).toBeVisible(); // still booting
+    await page.keyboard.press("x");
+    await expect(page.getByTestId("omarchy-topbar")).toBeVisible({ timeout: 1000 });
+  });
+
   test("Ctrl+3 switches to Skills workspace", async ({ page }) => {
     await openDesktop(page);
     await page.keyboard.press("Control+3");

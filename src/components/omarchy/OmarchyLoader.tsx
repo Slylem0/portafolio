@@ -9,6 +9,8 @@ type ModeProps = { onExit(): void };
 type EarlyHost = { __omarchyEarly?: EventListener };
 
 const ERROR_MS = 4000;
+// Past this, a chunk that is still downloading counts as failed (error toast, then reset).
+export const LINK_TIMEOUT_MS = 10_000;
 
 /**
  * Tiny always-loaded island (client:load). It waits for the hint click or the open
@@ -22,34 +24,65 @@ export default function OmarchyLoader() {
   const [failed, setFailed] = useState(false);
   const openRef = useRef(false);
   const loading = useRef(false);
+  const loaded = useRef(false);
+  const cancelRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     let superArmed = false;
     let errTimer = 0;
+    let linkTimer = 0;
+    const showError = () => {
+      setFailed(true);
+      clearTimeout(errTimer);
+      errTimer = window.setTimeout(() => setFailed(false), ERROR_MS);
+    };
+    // Leave the LINKING overlay without opening (Esc, tap, or the link timeout).
+    const cancel = (withError: boolean) => {
+      clearTimeout(linkTimer);
+      if (!openRef.current || loaded.current) return;
+      openRef.current = false;
+      setOpen(false);
+      if (withError) showError();
+    };
+    cancelRef.current = () => cancel(false);
     const activate = () => {
       superArmed = false;
       if (openRef.current) return;
       openRef.current = true;
       setOpen(true);
       setFailed(false);
+      if (loaded.current) return;
+      clearTimeout(linkTimer);
+      linkTimer = window.setTimeout(() => cancel(true), LINK_TIMEOUT_MS);
       if (loading.current) return;
       loading.current = true;
       import("./OmarchyMode").then(
-        (m) => setMode(() => m.default),
+        (m) => {
+          loaded.current = true;
+          clearTimeout(linkTimer);
+          setMode(() => m.default);
+        },
         () => {
           loading.current = false;
+          clearTimeout(linkTimer);
+          // A load that fails after the visitor cancelled stays silent.
+          if (!openRef.current) return;
           openRef.current = false;
           setOpen(false);
-          setFailed(true);
-          clearTimeout(errTimer);
-          errTimer = window.setTimeout(() => setFailed(false), ERROR_MS);
+          showError();
         },
       );
     };
 
     // A bare Super tap opens on keyup, so Super+<key> / Super+click combos never trigger it.
     const onKeyDown = (e: KeyboardEvent) => {
-      if (openRef.current) return;
+      if (openRef.current) {
+        if (e.key === "Escape" && !loaded.current) {
+          e.preventDefault();
+          cancel(false);
+        }
+        return;
+      }
       const action = keyToAction(e, false);
       if (action?.type !== "open") {
         superArmed = false;
@@ -89,6 +122,7 @@ export default function OmarchyLoader() {
     return () => {
       off();
       clearTimeout(errTimer);
+      clearTimeout(linkTimer);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
       window.removeEventListener("blur", disarm);
@@ -104,11 +138,12 @@ export default function OmarchyLoader() {
 
   if (open && Mode) return <Mode onExit={exit} />;
   if (open)
-    // Immediate feedback while the chunk downloads: the boot's red frame.
+    // Immediate feedback while the chunk downloads: the boot's red frame. Esc or a tap cancels.
     return (
       <div
         role="status"
         data-testid="omarchy-linking"
+        onClick={() => cancelRef.current()}
         className="fixed inset-0 z-[60] grid place-items-center bg-[color-mix(in_srgb,var(--alert)_55%,#d00000)] font-bebop text-3xl tracking-[0.4em] text-bg"
       >
         {t.omarchy.linking}
