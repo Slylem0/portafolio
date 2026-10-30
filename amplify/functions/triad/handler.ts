@@ -4,7 +4,7 @@ import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { buildSystemPrompt } from "./prompt";
 import { parseModelOutput, validateQuestion } from "./parse";
-import { checkRateLimit } from "./rateLimit";
+import { checkGlobalLimit, checkRateLimit } from "./rateLimit";
 
 export type ConverseOpts = { temperature?: number; timeoutMs?: number };
 export type Deps = {
@@ -53,10 +53,14 @@ export function createHandler(deps: Deps) {
 
     try {
       const ip = event.requestContext?.http?.sourceIp ?? "unknown";
-      if (!(await checkRateLimit(deps.db, ip, deps.now()))) return done(429, { error: "rate_limited" });
+      const now = deps.now();
+      if (!(await checkRateLimit(deps.db, ip, now))) return done(429, { error: "rate_limited" });
+      if (!(await checkGlobalLimit(deps.db, now))) return done(429, { error: "busy" });
       const system = buildSystemPrompt(input.lang);
       const question = `<question>${input.question.replace(/[<>]/g, "")}</question>`;
-      let result = parseModelOutput(await deps.converse(system, question));
+      let result = parseModelOutput(
+        await deps.converse(system, question, { timeoutMs: Math.max(1, BUDGET_MS - (Date.now() - t0)) }),
+      );
       // Nova occasionally emits non-JSON; one cooler retry fixes most of those (same rate-limit slot).
       const left = BUDGET_MS - (Date.now() - t0);
       if (!result && left >= MIN_RETRY_MS) {
@@ -71,26 +75,36 @@ export function createHandler(deps: Deps) {
   };
 }
 
+/** One Converse call; always bounded by an abort signal (the remaining budget, or the whole budget). */
+export async function bedrockConverse(
+  client: Pick<BedrockRuntimeClient, "send">,
+  system: string,
+  question: string,
+  opts?: ConverseOpts,
+): Promise<string> {
+  const out = await client.send(
+    new ConverseCommand({
+      modelId: "us.amazon.nova-lite-v1:0",
+      system: [{ text: system }],
+      messages: [{ role: "user", content: [{ text: question }] }],
+      inferenceConfig: { maxTokens: 300, temperature: opts?.temperature ?? 0.7 },
+    }),
+    { abortSignal: AbortSignal.timeout(opts?.timeoutMs ?? BUDGET_MS) },
+  );
+  return out.output?.message?.content?.map((c) => c.text ?? "").join("") ?? "";
+}
+
 let bedrock: BedrockRuntimeClient | undefined;
 let ddb: DynamoDBClient | undefined;
 
 export const handler = createHandler({
-  async converse(system, question, opts) {
+  converse(system, question, opts) {
     bedrock ??= new BedrockRuntimeClient({
       region: "us-east-1",
       maxAttempts: 2,
       requestHandler: new NodeHttpHandler({ connectionTimeout: 2000, requestTimeout: 6000 }),
     });
-    const out = await bedrock.send(
-      new ConverseCommand({
-        modelId: "us.amazon.nova-lite-v1:0",
-        system: [{ text: system }],
-        messages: [{ role: "user", content: [{ text: question }] }],
-        inferenceConfig: { maxTokens: 300, temperature: opts?.temperature ?? 0.7 },
-      }),
-      opts?.timeoutMs ? { abortSignal: AbortSignal.timeout(opts.timeoutMs) } : undefined,
-    );
-    return out.output?.message?.content?.map((c) => c.text ?? "").join("") ?? "";
+    return bedrockConverse(bedrock, system, question, opts);
   },
   db: {
     async increment(key, ttl) {

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { createHandler } from "../../amplify/functions/triad/handler";
+import { bedrockConverse, createHandler } from "../../amplify/functions/triad/handler";
 
 const good = JSON.stringify({
   cores: [
@@ -44,10 +44,39 @@ describe("triad handler", () => {
     expect(r.statusCode).toBe(204);
   });
   it("429 when limited, without calling model", async () => {
-    const d = deps({ db: { increment: vi.fn(async () => 11) } });
+    const d = deps({ db: { increment: vi.fn(async () => 31) } });
     const r: any = await createHandler(d)(ev({ question: "hi" }));
     expect(r.statusCode).toBe(429);
+    expect(JSON.parse(r.body).error).toBe("rate_limited");
     expect(d.converse).not.toHaveBeenCalled();
+    // Per-IP is checked first; a refused IP does not consume the global budget.
+    expect(d.db.increment).toHaveBeenCalledTimes(1);
+  });
+  it("429 busy when the global hourly ceiling is exceeded, without calling model", async () => {
+    const increment = vi.fn(async (key: string) => (key.startsWith("global:") ? 301 : 1));
+    const d = deps({ db: { increment } });
+    const r: any = await createHandler(d)(ev({ question: "hi" }));
+    expect(r.statusCode).toBe(429);
+    expect(JSON.parse(r.body)).toEqual({ error: "busy" });
+    expect(d.converse).not.toHaveBeenCalled();
+  });
+  it("counts per-IP and global once each per request (per-IP first)", async () => {
+    const d = deps();
+    const r: any = await createHandler(d)(ev({ question: "hi" }));
+    expect(r.statusCode).toBe(200);
+    const keys = d.db.increment.mock.calls.map((c: unknown[]) => c[0] as string);
+    expect(keys).toHaveLength(2);
+    expect(keys[0]).toMatch(/^[0-9a-f]{64}:2026-10-30T10$/);
+    expect(keys[1]).toBe("global:2026-10-30T10");
+    expect(d.db.increment.mock.calls[1][1]).toBe(d.db.increment.mock.calls[0][1]);
+  });
+  it("bounds the first model call with the time budget", async () => {
+    const d = deps();
+    await createHandler(d)(ev({ question: "hi" }));
+    const opts = d.converse.mock.calls[0][2];
+    expect(opts.timeoutMs).toBeGreaterThan(0);
+    expect(opts.timeoutMs).toBeLessThanOrEqual(7000);
+    expect(opts.temperature).toBeUndefined();
   });
   it("502 on garbage output", async () => {
     const r: any = await createHandler(deps({ converse: async () => "garbage" }))(ev({ question: "hi" }));
@@ -77,7 +106,7 @@ describe("triad handler", () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
     const q = "SECRET-QUESTION-TEXT?";
     await createHandler(deps())(ev({ question: q + "a".repeat(200) }));
-    await createHandler(deps({ db: { increment: async () => 11 } }))(ev({ question: q }));
+    await createHandler(deps({ db: { increment: async () => 31 } }))(ev({ question: q }));
     await createHandler(deps({ converse: async () => { throw new Error("boom " + q); } }))(ev({ question: q }));
     await createHandler(deps({ converse: async () => "garbage" }))(ev({ question: q }));
     const logged = log.mock.calls.flat().join(" ");
@@ -104,20 +133,20 @@ describe("triad handler", () => {
     const r: any = await createHandler(d)(ev({ question: "hi" }));
     expect(r.statusCode).toBe(200);
     expect(converse).toHaveBeenCalledTimes(2);
-    expect(converse.mock.calls[0][2]).toBeUndefined();
+    expect(converse.mock.calls[0][2].temperature).toBeUndefined();
     expect(converse.mock.calls[1][2]).toMatchObject({ temperature: 0.2 });
     expect(converse.mock.calls[1][2].timeoutMs).toBeGreaterThanOrEqual(3000);
     expect(converse.mock.calls[1][2].timeoutMs).toBeLessThanOrEqual(7000);
-    expect(d.db.increment).toHaveBeenCalledTimes(1);
+    expect(d.db.increment).toHaveBeenCalledTimes(2);
   });
-  it("502 bad_model_output after two unparseable outputs; one rate-limit increment", async () => {
+  it("502 bad_model_output after two unparseable outputs; one increment per counter", async () => {
     const converse = vi.fn(async () => "garbage");
     const d = deps({ converse });
     const r: any = await createHandler(d)(ev({ question: "hi" }));
     expect(r.statusCode).toBe(502);
     expect(JSON.parse(r.body).error).toBe("bad_model_output");
     expect(converse).toHaveBeenCalledTimes(2);
-    expect(d.db.increment).toHaveBeenCalledTimes(1);
+    expect(d.db.increment).toHaveBeenCalledTimes(2);
   });
   it("skips the retry when too little time budget is left", async () => {
     vi.useFakeTimers({ toFake: ["Date"] });
@@ -147,5 +176,18 @@ describe("triad handler", () => {
     const r: any = await createHandler(deps({ converse }))(ev({ question: "hi" }));
     expect(r.statusCode).toBe(502);
     expect(converse).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("bedrockConverse", () => {
+  it("passes an abort signal to the first call (no explicit timeout)", async () => {
+    const send = vi.fn(async (_cmd: unknown, _o?: { abortSignal?: AbortSignal }) => ({
+      output: { message: { content: [{ text: "ok" }] } },
+    }));
+    const out = await bedrockConverse({ send } as any, "sys", "<question>q</question>");
+    expect(out).toBe("ok");
+    expect(send.mock.calls[0][1]?.abortSignal).toBeInstanceOf(AbortSignal);
+    await bedrockConverse({ send } as any, "sys", "q", { timeoutMs: 6500 });
+    expect(send.mock.calls[1][1]?.abortSignal).toBeInstanceOf(AbortSignal);
   });
 });
