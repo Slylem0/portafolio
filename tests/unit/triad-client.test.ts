@@ -37,15 +37,29 @@ describe("askTriad", () => {
   it("fetch rejects → offline", async () => {
     const r = await askTriad("q", "en", { url: URL, fetch: vi.fn(async () => { throw new TypeError("net"); }) });
     expect(r.offline).toBe(true);
+    expect(r.reason).toBe("error");
     expectShape(r.response);
   });
-  it("429 → offline", async () => {
+  it("429 rate_limited → offline with reason quota, still answered locally", async () => {
     const r = await askTriad("q", "en", { url: URL, fetch: vi.fn(async () => res(429, { error: "rate_limited" })) });
     expect(r.offline).toBe(true);
+    expect(r.reason).toBe("quota");
+    expectShape(r.response);
   });
-  it("502 → offline", async () => {
+  it("429 busy → offline with reason busy", async () => {
+    const r = await askTriad("q", "es", { url: URL, fetch: vi.fn(async () => res(429, { error: "busy" })) });
+    expect(r.offline).toBe(true);
+    expect(r.reason).toBe("busy");
+    expectShape(r.response);
+  });
+  it("429 with an unreadable body → quota", async () => {
+    const r = await askTriad("q", "en", { url: URL, fetch: vi.fn(async () => res(429, "nope")) });
+    expect(r.reason).toBe("quota");
+  });
+  it("502 → offline with reason error", async () => {
     const r = await askTriad("q", "es", { url: URL, fetch: vi.fn(async () => res(502, { error: "x" })) });
     expect(r.offline).toBe(true);
+    expect(r.reason).toBe("error");
   });
   it("8 s timeout → offline (and aborts the request)", async () => {
     vi.useFakeTimers();
@@ -62,6 +76,7 @@ describe("askTriad", () => {
     await vi.advanceTimersByTimeAsync(1);
     const r = await p;
     expect(r.offline).toBe(true);
+    expect(r.reason).toBe("error");
     expect(signal?.aborted).toBe(true);
   });
   it("malformed 200 body → offline", async () => {
@@ -74,6 +89,7 @@ describe("askTriad", () => {
     const fetch = vi.fn(async () => res(200, { ...valid, verdict: "REJECTED" }));
     const r = await askTriad("  Should I learn Go?  ", "es", { url: URL, fetch });
     expect(r.offline).toBe(false);
+    expect(r.reason).toBeUndefined();
     expect(r.response.cores[1].line).toBe("Eh.");
     expect(r.response.verdict).toBe("APPROVED");
     const [u, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];

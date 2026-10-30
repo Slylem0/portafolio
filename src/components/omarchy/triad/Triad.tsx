@@ -90,6 +90,9 @@ export default function Triad() {
   };
 
   const done = !!result && shown >= 3;
+  // Quota (per IP) and the global ceiling are not outages: say so, while still answering locally.
+  const quota = result?.reason === "quota" || result?.reason === "busy";
+  const linkLabel = !result?.offline ? t.triad.linkOk : quota ? t.triad.quota : t.triad.linkLost;
   const verdict = result?.response.verdict;
   const resolution =
     result && verdict
@@ -102,7 +105,7 @@ export default function Triad() {
     done && result
       ? `${result.response.cores
           .map((c) => `${t.triad.cores[CORE_KEYS[c.id]]} ${c.vote === "YES" ? t.triad.yes : t.triad.no}`)
-          .join(", ")} — ${resolution}${result.offline ? `. ${t.triad.linkLost}` : ""}`
+          .join(", ")} — ${resolution}${result.offline ? `. ${linkLabel}` : ""}`
       : "";
 
   return (
@@ -112,12 +115,17 @@ export default function Triad() {
         {result && (
           <span
             data-testid={result.offline ? "triad-offline" : "triad-online"}
+            data-reason={result.reason ?? ""}
             className={cn(
               "border px-1.5 py-0.5 text-[10px] tracking-widest",
-              result.offline ? "border-alert/70 text-alert" : "border-phosphor/60 text-phosphor",
+              !result.offline
+                ? "border-phosphor/60 text-phosphor"
+                : quota
+                  ? "border-amber/70 text-amber"
+                  : "border-alert/70 text-alert",
             )}
           >
-            {result.offline ? t.triad.linkLost : t.triad.linkOk}
+            {linkLabel}
           </span>
         )}
       </div>

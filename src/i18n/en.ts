@@ -174,6 +174,7 @@ export const en = {
     rejected: "REJECTED",
     resolution: "RESOLUTION: {verdict} {score}",
     linkLost: "LINK LOST — LOCAL MODE",
+    quota: "QUOTA REACHED — LOCAL MODE",
     tooLong: "Question too long (max 200 characters).",
     empty: "Type a question first.",
     inputLabel: "Question for TRIAD (yes/no, max 200 characters)",

@@ -370,6 +370,34 @@ test.describe("TRIAD", () => {
     expect(calls).toBe(1);
   });
 
+  test("TRIAD 429 shows QUOTA REACHED (not LINK LOST) and still answers locally", async ({ page, isMobile }) => {
+    let busy = false;
+    await page.route(`${FAKE}**`, (route) =>
+      route.fulfill({
+        status: 429,
+        contentType: "application/json",
+        headers: { "access-control-allow-origin": "*" },
+        body: JSON.stringify({ error: busy ? "busy" : "rate_limited" }),
+      }),
+    );
+    await openTriad(page, isMobile);
+    await page.getByTestId("triad-input").fill("Should I learn Go next?");
+    await page.getByTestId("triad-submit").click();
+    const badge = page.getByTestId("triad-offline");
+    await expect(badge).toHaveText("QUOTA REACHED — LOCAL MODE");
+    await expect(badge).toHaveAttribute("data-reason", "quota");
+    await expect(page.getByTestId("triad-resolution")).toHaveText(/^RESOLUTION: (APPROVED|REJECTED) [0-3]–[0-3]$/);
+    await expect(page.getByTestId("triad-live")).toContainText("QUOTA REACHED — LOCAL MODE");
+    await expect(page.getByText("LINK LOST — LOCAL MODE")).toHaveCount(0);
+
+    busy = true;
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent("lang-change", { detail: "es" })));
+    await page.getByTestId("triad-input").fill("¿Aprendo Go?");
+    await page.getByTestId("triad-submit").click();
+    await expect(badge).toHaveAttribute("data-reason", "busy");
+    await expect(badge).toHaveText("CUOTA ALCANZADA — MODO LOCAL");
+  });
+
   test("TRIAD shows the backend verdict with cores revealed in order", async ({ page, isMobile }) => {
     const bodies: unknown[] = [];
     await page.route(`${FAKE}**`, async (route) => {

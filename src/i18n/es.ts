@@ -176,6 +176,7 @@ export const es: Dict = {
     rejected: "RECHAZADO",
     resolution: "RESOLUCIÓN: {verdict} {score}",
     linkLost: "LINK LOST — LOCAL MODE",
+    quota: "CUOTA ALCANZADA — MODO LOCAL",
     tooLong: "Pregunta demasiado larga (máx. 200 caracteres).",
     empty: "Escribe una pregunta primero.",
     inputLabel: "Pregunta para TRIAD (sí/no, máx. 200 caracteres)",

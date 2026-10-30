@@ -4,7 +4,9 @@ import type { Core, CoreId, TriadResponse } from "../../../../amplify/functions/
 import { localAnswer } from "./fallback";
 
 export type { Core, CoreId, TriadResponse };
-export type TriadResult = { response: TriadResponse; offline: boolean };
+/** Why an answer came from the local pool: the hourly quota (per IP), the global ceiling, or anything else. */
+export type OfflineReason = "quota" | "busy" | "error";
+export type TriadResult = { response: TriadResponse; offline: boolean; reason?: OfflineReason };
 type Deps = { fetch?: typeof fetch; url?: string | null; timeoutMs?: number };
 
 export const MAX_QUESTION = 200;
@@ -48,33 +50,40 @@ export function scoreOf(r: TriadResponse): string {
   return `${yes}–${3 - yes}`;
 }
 
-/** Asks the TRIAD backend; never rejects — any failure answers from the local pool with `offline: true`. */
+/**
+ * Asks the TRIAD backend; never rejects — any failure answers from the local pool with `offline: true`
+ * and a `reason` (429 `rate_limited` → "quota", 429 `busy` → "busy", anything else → "error").
+ */
 export async function askTriad(question: string, lang: Lang, deps: Deps = {}): Promise<TriadResult> {
   const q = question.trim().slice(0, MAX_QUESTION);
-  const offline = (): TriadResult => ({ response: localAnswer(q, lang), offline: true });
+  const offline = (reason: OfflineReason = "error"): TriadResult => ({ response: localAnswer(q, lang), offline: true, reason });
   const url = deps.url === undefined ? resolveTriadUrl() : deps.url;
   if (!url) return offline();
 
   const doFetch = deps.fetch ?? globalThis.fetch;
   const ctrl = new AbortController();
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<null>((resolve) => {
+  const timeout = new Promise<OfflineReason>((resolve) => {
     timer = setTimeout(() => {
       ctrl.abort();
-      resolve(null);
+      resolve("error");
     }, deps.timeoutMs ?? TIMEOUT_MS);
   });
-  const request = (async () => {
+  const request = (async (): Promise<TriadResponse | OfflineReason> => {
     // No explicit content-type: a text/plain body is a CORS "simple request" (no preflight round trip);
     // the Lambda parses the JSON body regardless.
     const res = await doFetch(url, { method: "POST", body: JSON.stringify({ question: q, lang }), signal: ctrl.signal });
-    if (!res.ok) return null;
-    return toResponse(await res.json());
-  })().catch(() => null);
+    if (res.status === 429) {
+      const body = (await res.json().catch(() => null)) as { error?: unknown } | null;
+      return body?.error === "busy" ? "busy" : "quota";
+    }
+    if (!res.ok) return "error";
+    return toResponse(await res.json()) ?? "error";
+  })().catch((): OfflineReason => "error");
 
   try {
-    const response = await Promise.race([request, timeout]);
-    return response ? { response, offline: false } : offline();
+    const out = await Promise.race([request, timeout]);
+    return typeof out === "string" ? offline(out) : { response: out, offline: false };
   } catch {
     return offline();
   } finally {
