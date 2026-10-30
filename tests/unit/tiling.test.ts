@@ -55,4 +55,10 @@ describe("dwindle", () => {
     expect(c.x).toBe(d.x);
     expect(d.y).toBeGreaterThan(c.y + c.h);
   });
+  it("seam between two windows equals gap exactly", () => {
+    const [a, b] = dwindle(2, area, gap);
+    expect(b.y - (a.y + a.h)).toBe(gap);
+    const [c, d] = dwindle(2, { x: 0, y: 0, w: 800, h: 400 }, gap);
+    expect(d.x - (c.x + c.w)).toBe(gap);
+  });
 });

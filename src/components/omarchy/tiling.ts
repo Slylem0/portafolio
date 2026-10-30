@@ -8,7 +8,7 @@ export type Rect = { x: number; y: number; w: number; h: number };
 export function dwindle(count: number, area: Rect, gap: number): Rect[] {
   if (count <= 0) return [];
   const g = Math.max(0, gap);
-  let cur: Rect = {
+  const cur: Rect = {
     x: area.x + g,
     y: area.y + g,
     w: Math.max(0, area.w - 2 * g),

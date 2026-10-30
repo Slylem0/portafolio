@@ -40,4 +40,28 @@ describe("keyToAction", () => {
     expect(keyToAction(k("Enter", { ctrlKey: true, altKey: true }), true)).toBeNull();
     expect(keyToAction(k("1", { metaKey: true, altKey: true }), true)).toBeNull();
   });
+  it("non-typing plain keys map when open", () => {
+    for (const n of [1, 2, 3, 4, 5])
+      expect(keyToAction(k(String(n)), true, false)).toEqual({ type: "workspace", n });
+    expect(keyToAction(k("t"), true, false)).toEqual({ type: "terminal" });
+    expect(keyToAction(k("Enter"), true, false)).toEqual({ type: "terminal" });
+    expect(keyToAction(k("p"), true, false)).toEqual({ type: "displaySwitch" });
+    expect(keyToAction(k("q"), true, false)).toEqual({ type: "close" });
+    expect(keyToAction(k("Escape"), true, false)).toEqual({ type: "exit" });
+    expect(keyToAction(k("6"), true, false)).toBeNull();
+  });
+  it("non-typing plain keys: alt/shift null, typing=true null, closed null", () => {
+    for (const key of ["1", "t", "Enter", "p", "q"]) {
+      expect(keyToAction(k(key, { altKey: true }), true, false)).toBeNull();
+      expect(keyToAction(k(key, { shiftKey: true }), true, false)).toBeNull();
+      expect(keyToAction(k(key), true, true)).toBeNull();
+      expect(keyToAction(k(key), true)).toBeNull();
+      expect(keyToAction(k(key), false, false)).toBeNull();
+    }
+  });
+  it("pins Meta alone while open, Shift handling", () => {
+    expect(keyToAction(k("Meta", { metaKey: true }), true)).toBeNull();
+    expect(keyToAction(k("P", { ctrlKey: true, shiftKey: true }), true)).toEqual({ type: "displaySwitch" });
+    expect(keyToAction(k("1", { ctrlKey: true, shiftKey: true }), true)).toBeNull();
+  });
 });
