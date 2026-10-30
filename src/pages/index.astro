@@ -14,6 +14,33 @@ import OmarchyLoader from "@/components/omarchy/OmarchyLoader";
   title="Pablo Nicolás Marín — Cloud & Backend Builder"
   description="Portfolio of Pablo Nicolás Marín: cloud and backend projects built on AWS."
 >
+  <script is:inline>
+    // Pre-hydration bridge for Omarchy Mode: an open requested before the islands are live
+    // (hint click on a not-yet-hydrated navbar, or Ctrl/Cmd+K before the loader) is queued
+    // as a pending flag that OmarchyLoader consumes on mount.
+    (function () {
+      var K = "__omarchyPending";
+      function key(e) {
+        if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === "k" || e.key === "K")) {
+          e.preventDefault();
+          window[K] = true;
+        }
+      }
+      window.addEventListener("keydown", key);
+      window.__omarchyEarly = key;
+      document.addEventListener(
+        "click",
+        function (e) {
+          var hint = e.target && e.target.closest && e.target.closest('[data-testid="omarchy-hint"]');
+          if (hint && hint.closest("astro-island[ssr]")) {
+            window[K] = true;
+            window.dispatchEvent(new Event("omarchy:open"));
+          }
+        },
+        true,
+      );
+    })();
+  </script>
   <Navbar client:load />
   <main>
     <Hero client:load />
@@ -23,5 +50,5 @@ import OmarchyLoader from "@/components/omarchy/OmarchyLoader";
     <MissionLog client:visible />
   </main>
   <Footer client:visible />
-  <OmarchyLoader client:idle />
+  <OmarchyLoader client:load />
 </Base>

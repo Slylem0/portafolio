@@ -4,6 +4,7 @@ export type Action =
   | { type: "displaySwitch" }
   | { type: "close" }
   | { type: "exit" }
+  | { type: "blur" }
   | { type: "open" };
 
 export type KeyLike = {
@@ -25,8 +26,11 @@ export function keyToAction(e: KeyLike, open: boolean, typing: boolean = true): 
     return null;
   }
 
-  if (key === "Escape") return { type: "exit" };
+  // Esc first leaves the input (the desktop clears it if non-empty); Esc outside an input exits.
+  if (key === "Escape") return typing ? { type: "blur" } : { type: "exit" };
   if (e.altKey) return null;
+  // Mod+K toggles the mode off again.
+  if (mod && key === "k") return { type: "exit" };
   if (!mod) {
     if (typing || e.shiftKey) return null;
     return mapKey(key, key === "t");

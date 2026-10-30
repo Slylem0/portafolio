@@ -81,6 +81,10 @@ export const es: Dict = {
     end: "FIN DE LA TRANSMISIÓN",
   },
   omarchy: {
+    linking: "ENLAZANDO…",
+    loadError: "El Modo Omarchy no pudo cargar. Revisa tu conexión e inténtalo de nuevo.",
+    skipTouch: "toca para saltar",
+    restore: "Restaurar {name}",
     alert: "EMERGENCIA",
     label: "Modo Omarchy — escritorio en mosaico",
     empty: "Espacio vacío. Presiona T para abrir una terminal.",
@@ -96,6 +100,7 @@ export const es: Dict = {
       "[ OK ] Bienvenido, constructor.",
     ],
     topBar: {
+      langLabel: "Cambiar idioma a inglés (actual: español)",
       workspace: "Espacio {n}: {name}",
       workspaces: "Espacios de trabajo",
       lang: "LANG",
@@ -112,8 +117,8 @@ export const es: Dict = {
     dock: {
       label: "Dock",
       keys: "1–5 · T · P · Q · ESC",
-      keysHint: "mantén Ctrl mientras escribes",
-      swipe: "desliza ⇆ para cambiar",
+      keysHint: "Esc sale de la terminal · luego 1–5 · T · P · Q",
+      swipe: "desliza ← → para cambiar",
       terminal: "Terminal",
       displaySwitch: "Display Switch",
       close: "Cerrar ventana",

@@ -28,15 +28,24 @@ describe("keyToAction", () => {
     for (const key of ["a", "p", "q", "k", "1", "5", "Enter", "Backspace"])
       expect(keyToAction(k(key), true)).toBeNull();
   });
-  it("Escape exits", () => {
-    expect(keyToAction(k("Escape"), true)).toEqual({ type: "exit" });
+  it("Escape exits when not typing, blurs the input when typing", () => {
+    expect(keyToAction(k("Escape"), true, false)).toEqual({ type: "exit" });
+    expect(keyToAction(k("Escape"), true, true)).toEqual({ type: "blur" });
+    expect(keyToAction(k("Escape"), true)).toEqual({ type: "blur" });
+    expect(keyToAction(k("Escape", { ctrlKey: true }), true, true)).toEqual({ type: "blur" });
   });
   it("Ctrl+6 returns null", () => {
     for (const key of ["6", "7", "8", "9", "0"])
       expect(keyToAction(k(key, { ctrlKey: true }), true)).toBeNull();
   });
-  it("Mod+K while open and alt combos return null", () => {
-    expect(keyToAction(k("k", { ctrlKey: true }), true)).toBeNull();
+  it("Mod+K while open toggles the mode off (also while typing)", () => {
+    for (const typing of [true, false]) {
+      expect(keyToAction(k("k", { ctrlKey: true }), true, typing)).toEqual({ type: "exit" });
+      expect(keyToAction(k("K", { metaKey: true }), true, typing)).toEqual({ type: "exit" });
+    }
+    expect(keyToAction(k("k", { ctrlKey: true, altKey: true }), true)).toBeNull();
+  });
+  it("alt combos return null while open", () => {
     expect(keyToAction(k("Enter", { ctrlKey: true, altKey: true }), true)).toBeNull();
     expect(keyToAction(k("1", { metaKey: true, altKey: true }), true)).toBeNull();
   });

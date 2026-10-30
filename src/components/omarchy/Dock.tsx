@@ -2,6 +2,8 @@ import { useLang } from "@/i18n";
 import { WORKSPACES, type WsNum } from "./TopBar";
 
 interface DockProps {
+  /** Focus is in a text field: show how to get out of it instead of the plain-key legend. */
+  typing: boolean;
   active: WsNum;
   names: Record<WsNum, string>;
   onWorkspace(n: WsNum): void;
@@ -15,7 +17,7 @@ const item =
   "om-focus flex items-center gap-2 px-2.5 py-1.5 text-bone/85 transition-colors hover:bg-bone/10 hover:text-[var(--om-accent)]";
 
 /** Bottom dock: shortcut buttons with key hints (desktop) or workspace tabs (mobile). */
-export default function Dock({ active, names, onWorkspace, onTerminal, onDisplaySwitch, onClose, onExit }: DockProps) {
+export default function Dock({ typing, active, names, onWorkspace, onTerminal, onDisplaySwitch, onClose, onExit }: DockProps) {
   const { t } = useLang();
   const d = t.omarchy.dock;
   const kbd = (k: string) => (
@@ -44,8 +46,8 @@ export default function Dock({ active, names, onWorkspace, onTerminal, onDisplay
         <button type="button" onClick={onExit} className={item}>
           <span aria-hidden="true" className="text-alert">⏻</span> {d.exit} {kbd("ESC")}
         </button>
-        <p className="om-muted ml-4 hidden tracking-widest lg:block">
-          {d.keys} <span className="text-bone/50">· {d.keysHint}</span>
+        <p aria-live="polite" className="om-muted ml-4 hidden tracking-widest lg:block">
+          {typing ? d.keysHint : d.keys}
         </p>
       </div>
 

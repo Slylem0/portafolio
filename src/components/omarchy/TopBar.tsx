@@ -68,6 +68,7 @@ export default function TopBar({ active, names, focusedTitle, onWorkspace, onDis
         </button>
         <button
           type="button"
+          aria-label={tb.langLabel}
           onClick={() => setLang(lang === "en" ? "es" : "en")}
           className="om-chip om-focus h-6 px-1.5 tracking-widest"
         >
@@ -79,7 +80,8 @@ export default function TopBar({ active, names, focusedTitle, onWorkspace, onDis
           onClick={onExit}
           className={cn("om-focus h-6 border border-alert/70 px-1.5 font-bold tracking-widest text-alert hover:bg-alert hover:text-bg")}
         >
-          {tb.exit}
+          <span aria-hidden="true">✕ </span>
+          {tb.exit.replace(/^✕\s*/, "")}
         </button>
       </div>
     </header>

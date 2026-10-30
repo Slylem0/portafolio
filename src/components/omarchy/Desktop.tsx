@@ -27,6 +27,7 @@ type Msg =
   | { type: "session"; n: number }
   | { type: "focus"; id: string }
   | { type: "close"; id?: string }
+  | { type: "restore" }
   | { type: "select"; n: number };
 
 const BASE: Record<WsNum, Kind> = { 1: "about", 2: "sessions", 3: "skills", 4: "triad", 5: "log" };
@@ -45,8 +46,19 @@ function reducer(s: State, m: Msg): State {
   const put = (w: Ws, extra: Partial<State> = {}): State => ({ ...s, ...extra, ws: { ...s.ws, [s.active]: w } });
 
   switch (m.type) {
-    case "workspace":
-      return m.n === s.active ? s : { ...s, active: m.n, dir: m.n > s.active ? 1 : -1 };
+    case "workspace": {
+      if (m.n === s.active) return s;
+      // Re-spawn the workspace's own window if it was closed, so every workspace shows its content.
+      const target = s.ws[m.n];
+      const ws = target.wins.some((w) => w.kind === BASE[m.n])
+        ? s.ws
+        : { ...s.ws, [m.n]: { wins: [{ id: BASE[m.n], kind: BASE[m.n], fresh: true }, ...target.wins], focus: BASE[m.n] } };
+      return { ...s, ws, active: m.n, dir: m.n > s.active ? 1 : -1 };
+    }
+    case "restore":
+      return cur.wins.some((w) => w.kind === BASE[s.active])
+        ? s
+        : put({ wins: [{ id: BASE[s.active], kind: BASE[s.active], fresh: true }, ...cur.wins], focus: BASE[s.active] });
     case "spawn": {
       // One terminal / Display Switch per workspace: re-focus it if it already exists.
       const existing = cur.wins.find((w) => w.kind === m.kind);
@@ -86,6 +98,16 @@ function isTyping(el: Element | null): boolean {
   if (!(el instanceof HTMLElement)) return false;
   return el.isContentEditable || el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT";
 }
+/** Esc in a field: clear it if it has text (works for React-controlled inputs), else leave it. */
+function escapeField(el: Element | null): "cleared" | "left" {
+  if ((el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) && el.value) {
+    const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(proto, "value")?.set?.call(el, "");
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+    return "cleared";
+  }
+  return "left";
+}
 const isActivatable = (el: Element | null) => !!el?.closest("button, a[href], [role='button']");
 
 function useIsMobile() {
@@ -115,6 +137,19 @@ export default function Desktop({ theme, onTheme, onExit, rootRef }: DesktopProp
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
   // Which window should receive DOM focus after the next render (set by keyboard/dock actions).
   const [focusReq, setFocusReq] = useState<{ n: number; input: boolean } | null>(null);
+  const [typing, setTyping] = useState(false);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const sync = () => setTyping(isTyping(document.activeElement));
+    const later = () => queueMicrotask(sync);
+    root.addEventListener("focusin", sync);
+    root.addEventListener("focusout", later);
+    return () => {
+      root.removeEventListener("focusin", sync);
+      root.removeEventListener("focusout", later);
+    };
+  }, [rootRef]);
   const stateRef = useRef(s);
   stateRef.current = s;
   const themeRef = useRef(theme);
@@ -193,6 +228,15 @@ export default function Desktop({ theme, onTheme, onExit, rootRef }: DesktopProp
           dispatch({ type: "session", n: a.n });
           requestFocus();
           break;
+        case "blur": {
+          const el = document.activeElement;
+          if (escapeField(el) === "left") {
+            // Hand focus to the window that holds the field so plain-key shortcuts work.
+            const win = el instanceof HTMLElement ? el.closest<HTMLElement>("[data-win-id]") : null;
+            (win ?? rootRef.current)?.focus({ preventScroll: true });
+          }
+          break;
+        }
         case "exit":
           onExit();
           break;
@@ -200,7 +244,7 @@ export default function Desktop({ theme, onTheme, onExit, rootRef }: DesktopProp
           break;
       }
     },
-    [onExit, onTheme],
+    [onExit, onTheme, rootRef],
   );
 
   // Global shortcuts while the desktop is open.
@@ -337,9 +381,19 @@ export default function Desktop({ theme, onTheme, onExit, rootRef }: DesktopProp
                 style={{ "--dir": s.dir } as React.CSSProperties}
               >
                 {ws.wins.length === 0 && (
-                  <p className="om-muted absolute inset-x-4 top-1/2 -translate-y-1/2 text-center font-mono text-xs tracking-widest">
-                    {t.omarchy.empty}
-                  </p>
+                  <div className="absolute inset-x-4 top-1/2 flex -translate-y-1/2 flex-col items-center gap-3 text-center font-mono text-xs tracking-widest">
+                    <p className="om-muted">{t.omarchy.empty}</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        dispatch({ type: "restore" });
+                        requestFocus();
+                      }}
+                      className="om-chip om-focus px-3 py-1.5 text-bone hover:text-[var(--om-accent)]"
+                    >
+                      {t.omarchy.restore.replace("{name}", names[n])}
+                    </button>
+                  </div>
                 )}
                 {ws.wins.map((w, i) => {
                   const title = titleOf(w);
@@ -370,6 +424,7 @@ export default function Desktop({ theme, onTheme, onExit, rootRef }: DesktopProp
           })}
       </div>
       <Dock
+        typing={typing}
         active={s.active}
         names={names}
         onWorkspace={(n) => run({ type: "workspace", n })}

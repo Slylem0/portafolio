@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { openOmarchy, onOmarchyOpen, OMARCHY_OPEN } from "@/components/omarchy/events";
+import { openOmarchy, onOmarchyOpen, OMARCHY_OPEN, takePendingOpen } from "@/components/omarchy/events";
 
 beforeAll(() => {
   if (typeof (globalThis as any).window === "undefined") (globalThis as any).window = new EventTarget();
@@ -21,5 +21,19 @@ describe("omarchy events", () => {
     off();
     openOmarchy();
     expect(cb).toHaveBeenCalledTimes(1);
+  });
+  it("openOmarchy leaves a pending flag that is consumed once", () => {
+    takePendingOpen();
+    expect(takePendingOpen()).toBe(false);
+    openOmarchy();
+    expect(takePendingOpen()).toBe(true);
+    expect(takePendingOpen()).toBe(false);
+  });
+  it("a subscriber that handles the open clears the pending flag", () => {
+    takePendingOpen();
+    const off = onOmarchyOpen(() => {});
+    openOmarchy();
+    off();
+    expect(takePendingOpen()).toBe(false);
   });
 });

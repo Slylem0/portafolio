@@ -45,6 +45,7 @@ test.describe("desktop", () => {
     await expect(root).toHaveAttribute("role", "dialog");
     await expect(root).toHaveAttribute("aria-modal", "true");
     await expect(page.getByTestId("omarchy-boot")).toBeVisible();
+    await expect(page.getByTestId("omarchy-boot")).toContainText("press any key to skip");
     await page.keyboard.press("Space");
     const bar = page.getByTestId("omarchy-topbar");
     await expect(bar).toBeVisible({ timeout: 1000 });
@@ -75,6 +76,115 @@ test.describe("desktop", () => {
     await page.keyboard.type("3");
     await expect(input).toHaveValue("3");
     await expect(activeWorkspace(page)).toHaveAttribute("data-workspace", "1");
+  });
+
+  test("Esc in the terminal clears it, a second Esc leaves it, then plain 3 switches", async ({ page }) => {
+    await openDesktop(page);
+    await page.keyboard.press("t");
+    const input = page.getByTestId("omarchy-terminal-input");
+    await expect(input).toBeFocused();
+    const dock = page.getByTestId("omarchy-dock");
+    await expect(dock).toContainText("Esc leaves the terminal · then 1–5 · T · P · Q");
+    await page.keyboard.type("ls 3");
+    await page.keyboard.press("Escape");
+    await expect(input).toHaveValue("");
+    await expect(input).toBeFocused();
+    await expect(page.getByTestId("omarchy")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(input).not.toBeFocused();
+    await expect(page.getByTestId("omarchy")).toBeVisible();
+    await expect(page.locator("[data-kind='terminal']")).toHaveAttribute("data-focused", "true");
+    await expect(dock).toContainText("1–5 · T · P · Q · ESC");
+    await page.keyboard.press("3");
+    await expect(activeWorkspace(page)).toHaveAttribute("data-workspace", "3");
+    // React state was cleared too: the terminal submits nothing stale.
+    await page.keyboard.press("1");
+    await page.keyboard.press("t");
+    await page.keyboard.press("Enter");
+    await expect(page.getByTestId("omarchy-terminal-output").last()).not.toContainText("ls 3");
+  });
+
+  test("keyboard focus moves the WM focus", async ({ page }) => {
+    await openDesktop(page);
+    await page.keyboard.press("t");
+    await expect(page.locator("[data-kind='terminal']")).toHaveAttribute("data-focused", "true");
+    await page.getByRole("button", { name: "Close About" }).focus();
+    await expect(page.locator("[data-kind='about']")).toHaveAttribute("data-focused", "true");
+    await expect(page.locator("[data-kind='terminal']")).toHaveAttribute("data-focused", "false");
+  });
+
+  test("a closed workspace window comes back on revisit, or via Restore", async ({ page }) => {
+    await openDesktop(page);
+    await page.keyboard.press("q");
+    await expect(page.getByRole("button", { name: "Restore About" })).toBeVisible();
+    await page.getByRole("button", { name: "Restore About" }).click();
+    await expect(page.getByRole("group", { name: "About" })).toBeVisible();
+    await page.getByTestId("omarchy").focus();
+    await page.keyboard.press("q");
+    await page.keyboard.press("2");
+    await page.keyboard.press("1");
+    await expect(page.getByRole("group", { name: "About" })).toBeVisible();
+  });
+
+  test("Ctrl+K toggles Omarchy Mode off", async ({ page }) => {
+    await openDesktop(page);
+    await page.keyboard.press("t");
+    await page.keyboard.press("Control+k");
+    await expect(page.getByTestId("omarchy")).toHaveCount(0);
+  });
+
+  test("top bar controls have clean accessible names", async ({ page }) => {
+    await openDesktop(page);
+    const bar = page.getByTestId("omarchy-topbar");
+    await expect(bar.getByRole("button", { name: "EXIT", exact: true })).toBeVisible();
+    await expect(bar.getByRole("button", { name: "Switch language to Spanish (current: English)" })).toBeVisible();
+  });
+
+  test("Super+click does not open Omarchy Mode; a bare Super tap does", async ({ page }) => {
+    await gotoReady(page);
+    await page.keyboard.down("Meta");
+    await page.mouse.click(640, 500);
+    await page.keyboard.up("Meta");
+    await page.keyboard.down("Meta");
+    await page.mouse.wheel(0, 200);
+    await page.keyboard.up("Meta");
+    await page.waitForTimeout(300);
+    await expect(page.getByTestId("omarchy")).toHaveCount(0);
+    await expect(page.getByTestId("omarchy-linking")).toHaveCount(0);
+    await page.keyboard.press("Meta");
+    await expect(page.getByTestId("omarchy")).toBeVisible();
+  });
+
+  test("hint clicked right after navigation (before hydration) still opens", async ({ page }) => {
+    // Hold back the navbar and loader islands so the click lands on un-hydrated markup.
+    await page.route(/\/(Navbar|OmarchyLoader)\.[^/]*\.js$/, async (route) => {
+      await new Promise((r) => setTimeout(r, 1500));
+      await route.continue();
+    });
+    await page.goto("/", { waitUntil: "commit" });
+    await page.getByTestId("omarchy-hint").click();
+    await expect(page.locator("astro-island[component-url*='OmarchyLoader'][ssr]")).toHaveCount(1);
+    await expect(page.getByTestId("omarchy")).toBeVisible();
+  });
+
+  test("Ctrl+K pressed before hydration still opens", async ({ page }) => {
+    // Delay the loader island so the keypress definitely lands before it hydrates.
+    await page.route(/OmarchyLoader.*\.js$/, async (route) => {
+      await new Promise((r) => setTimeout(r, 1500));
+      await route.continue();
+    });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("astro-island[component-url*='OmarchyLoader'][ssr]")).toHaveCount(1);
+    await page.keyboard.press("Control+k");
+    await expect(page.getByTestId("omarchy")).toBeVisible({ timeout: 10000 });
+  });
+
+  test("shows LINKING while the chunk loads and an error toast if it fails", async ({ page }) => {
+    await page.route(/OmarchyMode.*\.js$/, (route) => route.abort());
+    await gotoReady(page);
+    await page.getByTestId("omarchy-hint").click();
+    await expect(page.getByRole("alert")).toContainText("failed to load");
+    await expect(page.getByTestId("omarchy")).toHaveCount(0);
   });
 
   test("Ctrl+3 switches to Skills workspace", async ({ page }) => {
@@ -163,12 +273,15 @@ test.describe("desktop", () => {
 
 test.describe("mobile", () => {
   test.skip(({ isMobile }) => !isMobile, "mobile single-window mode");
+  test.use({ hasTouch: true });
 
   test("one window visible at a time, dock switches", async ({ page }) => {
     await gotoReady(page);
     await page.getByTestId("omarchy-hint").click();
+    await expect(page.getByTestId("omarchy-boot")).toContainText("tap to skip");
     await page.getByTestId("omarchy-boot").click();
     await expect(page.getByTestId("omarchy-topbar")).toBeVisible({ timeout: 1000 });
+    await expect(page.getByTestId("omarchy-dock")).toContainText("swipe ← → to switch");
     const wins = page.locator("[data-testid='omarchy-window']:visible");
     await expect(wins).toHaveCount(1);
     await expect(page.getByRole("group", { name: "About" })).toBeVisible();

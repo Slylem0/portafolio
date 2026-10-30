@@ -23,9 +23,16 @@ function BootLine({ text }: { text: string }) {
 }
 
 /** Emergency boot: red hex alert, systemd-style boot log, fade. Any key or tap skips. */
-/** Escape leaves Omarchy Mode right away; every other key skips to the desktop. */
+/** Escape or Ctrl/Cmd+K leaves Omarchy Mode right away; every other key skips to the desktop. */
 export default function Boot({ onDone, onExit, reduced }: { onDone(): void; onExit(): void; reduced: boolean }) {
   const { t } = useLang();
+  const [coarse] = useState(() => {
+    try {
+      return window.matchMedia("(pointer: coarse)").matches;
+    } catch {
+      return false;
+    }
+  });
   const [phase, setPhase] = useState<Phase>(reduced ? "static" : "alert");
   const done = useRef(false);
   const finishRef = useRef(onDone);
@@ -51,7 +58,7 @@ export default function Boot({ onDone, onExit, reduced }: { onDone(): void; onEx
     const onKey = (e: KeyboardEvent) => {
       if (MODIFIERS.has(e.key) || e.isComposing) return;
       e.preventDefault();
-      if (e.key === "Escape") {
+      if (e.key === "Escape" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k")) {
         done.current = true;
         exitRef.current();
       } else finish();
@@ -106,8 +113,8 @@ export default function Boot({ onDone, onExit, reduced }: { onDone(): void; onEx
           </ul>
         </div>
       )}
-      <p className="absolute right-4 bottom-4 font-mono text-[10px] tracking-widest text-bone/70 uppercase mix-blend-difference">
-        {t.omarchy.skip}
+      <p className="absolute right-4 bottom-4 border border-bone/40 bg-bg px-2.5 py-1 font-mono text-xs tracking-widest text-bone uppercase">
+        {coarse ? t.omarchy.skipTouch : t.omarchy.skip}
       </p>
     </div>
   );

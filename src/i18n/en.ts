@@ -79,6 +79,10 @@ export const en = {
     end: "END OF TRANSMISSION",
   },
   omarchy: {
+    linking: "LINKING…",
+    loadError: "Omarchy Mode failed to load. Check your connection and try again.",
+    skipTouch: "tap to skip",
+    restore: "Restore {name}",
     alert: "EMERGENCY",
     label: "Omarchy Mode — tiling desktop",
     empty: "Empty workspace. Press T for a terminal.",
@@ -94,6 +98,7 @@ export const en = {
       "[ OK ] Welcome, builder.",
     ],
     topBar: {
+      langLabel: "Switch language to Spanish (current: English)",
       workspace: "Workspace {n}: {name}",
       workspaces: "Workspaces",
       lang: "LANG",
@@ -110,8 +115,8 @@ export const en = {
     dock: {
       label: "Dock",
       keys: "1–5 · T · P · Q · ESC",
-      keysHint: "hold Ctrl while typing",
-      swipe: "swipe ⇆ to switch",
+      keysHint: "Esc leaves the terminal · then 1–5 · T · P · Q",
+      swipe: "swipe ← → to switch",
       terminal: "Terminal",
       displaySwitch: "Display Switch",
       close: "Close window",

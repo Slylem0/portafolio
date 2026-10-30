@@ -35,6 +35,7 @@ export default function Window(p: WindowProps) {
       tabIndex={-1}
       hidden={p.hidden}
       onPointerDown={p.onFocus}
+      onFocus={p.onFocus}
       onAnimationEnd={(e) => {
         if (e.target === e.currentTarget) setFresh(false);
       }}
