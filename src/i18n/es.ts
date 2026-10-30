@@ -55,6 +55,7 @@ export const es: Dict = {
       ai: "IA",
     },
     learning: "aprendiendo",
+    average: "PROM",
   },
   sessions: {
     title: "SESIONES",

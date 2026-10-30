@@ -53,6 +53,7 @@ export const en = {
       ai: "AI",
     },
     learning: "learning",
+    average: "AVG",
   },
   sessions: {
     title: "SESSIONS",

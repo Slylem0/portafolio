@@ -161,6 +161,23 @@
   animation: flash 0.2s steps(1, end) 1;
 }
 
+/* Episode title card: one inverted frame, then a hard jolt into place (2 flashes max). */
+@keyframes title-cut {
+  0% { filter: invert(1); transform: scale(1.04); }
+  14% { filter: none; transform: translateX(-0.6%) scale(1.02); }
+  28% { filter: none; transform: none; }
+  100% { filter: none; transform: none; }
+}
+
+.title-cut {
+  animation: title-cut 0.5s steps(1, end) 1;
+}
+
+/* SyncBar segments light up in sequence once revealed. */
+.sync-seg {
+  transition: background-color 0.12s steps(1, end), opacity 0.12s steps(1, end);
+}
+
 /* Omarchy hint: HUD alarm blink on the panel only, text stays full-contrast */
 @keyframes hint-blink {
   0%, 55%, 100% { background-color: color-mix(in srgb, var(--alert) 8%, transparent); }
@@ -184,7 +201,11 @@
   }
   .flash,
   .smash-cut,
+  .title-cut,
   .hint-blink {
     animation: none !important;
+  }
+  .sync-seg {
+    transition: none !important;
   }
 }

@@ -2,6 +2,8 @@
 import Base from "@/layouts/Base.astro";
 import Navbar from "@/components/sections/Navbar";
 import Hero from "@/components/sections/Hero";
+import About from "@/components/sections/About";
+import Skills from "@/components/sections/Skills";
 ---
 
 <Base
@@ -11,9 +13,9 @@ import Hero from "@/components/sections/Hero";
   <Navbar client:load />
   <main>
     <Hero client:load />
-    {/* Section anchors; content lands in later tasks. */}
-    <section id="about" aria-label="About"></section>
-    <section id="skills" aria-label="Skills"></section>
+    <About client:visible />
+    <Skills client:visible />
+    {/* Remaining section anchors; content lands in Task 6. */}
     <section id="sessions" aria-label="Sessions"></section>
     <section id="log" aria-label="Log"></section>
   </main>
