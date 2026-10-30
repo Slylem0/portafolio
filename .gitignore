@@ -33,3 +33,4 @@ amplify_outputs.json
 
 # npm cache used by amplify.yml
 .npm/
+.vscode/
