@@ -9,6 +9,9 @@ export const en = {
     menu: "MENU",
     close: "CLOSE",
     hint: "⚠ EMERGENCY — PRESS ⊞ SUPER",
+    brand: "SLYLEM0",
+    est: "EST. 2024",
+    sections: "Sections",
   },
   hero: {
     coords: "LAT 3.90° N · LONG 76.30° W",
@@ -17,6 +20,13 @@ export const en = {
     viewSessions: "[ VIEW SESSIONS ]",
     contact: "[ CONTACT ]",
     hint: "⚠ EMERGENCY — PRESS ⊞ SUPER",
+    base: "BASE · BUGA, CO",
+    description: "Serverless backends on AWS, built from a Linux terminal in Buga, Colombia.",
+    notation: "AWAITING NEXT SESSION",
+    systemActive: "SYSTEM.ACTIVE",
+    sync: "SYNC 400%",
+    version: "V1.0.0",
+    rendering: "◐ RENDERING",
   },
   about: {
     title: "EPISODE 01: THE BUILDER FROM BUGA",

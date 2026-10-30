@@ -63,6 +63,7 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-border: var(--border);
@@ -81,6 +82,12 @@
   html {
     background: var(--bg);
     font-family: var(--font-mono);
+    scroll-padding-top: 5.5rem;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
   }
   body {
     background: var(--bg);
@@ -151,12 +158,30 @@
   animation: flash 0.2s steps(1, end) 1;
 }
 
+/* Omarchy hint: HUD alarm blink on the panel only, text stays full-contrast */
+@keyframes hint-blink {
+  0%, 55%, 100% { background-color: color-mix(in srgb, var(--alert) 8%, transparent); }
+  65%, 90% { background-color: color-mix(in srgb, var(--alert) 26%, transparent); }
+}
+
+@layer components {
+  .hint-blink {
+    background-color: color-mix(in srgb, var(--alert) 8%, transparent);
+    animation: hint-blink 2.4s steps(1, end) infinite;
+  }
+  .hint-blink:hover,
+  .hint-blink:focus-visible {
+    animation: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --motion: 0;
   }
   .flash,
-  .smash-cut {
+  .smash-cut,
+  .hint-blink {
     animation: none !important;
   }
 }

@@ -1,12 +1,21 @@
 ---
 import Base from "@/layouts/Base.astro";
+import Navbar from "@/components/sections/Navbar";
+import Hero from "@/components/sections/Hero";
 ---
 
 <Base
   title="Pablo Nicolás Marín — Cloud & Backend Builder"
   description="Portfolio of Pablo Nicolás Marín: cloud and backend projects built on AWS."
 >
-  <main class="min-h-screen flex items-center justify-center p-6">
-    <h1 class="font-eva text-4xl font-extrabold text-alert">Pablo Nicolás Marín</h1>
+  <Navbar client:load />
+  <main>
+    <Hero client:load />
+    {/* Section anchors; content lands in later tasks. */}
+    <section id="about" aria-label="About"></section>
+    <section id="skills" aria-label="Skills"></section>
+    <section id="sessions" aria-label="Sessions"></section>
+    <section id="log" aria-label="Log"></section>
   </main>
+  <footer id="footer"></footer>
 </Base>

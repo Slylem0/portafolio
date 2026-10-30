@@ -18,13 +18,26 @@ export default function AsciiOctahedron({ variant = "hero", className = "" }: Pr
     const css = getComputedStyle(document.documentElement);
     const phosphor = css.getPropertyValue("--phosphor").trim() || "#39ff88";
     const alert = css.getPropertyValue("--alert").trim() || "#ff6a00";
+    const unit = css.getPropertyValue("--unit").trim() || "#7b4dff";
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const speed = reduced ? 0.2 : 1;
-    const brightMin = RAMP.length - 2; // '%' and '@' glow in alert
+    // Shading bands: dim faces (' .:-=') in unit purple, mid ('+*') in phosphor, lit ('#%@') in alert.
+    const brightMin = RAMP.length - 3;
+    const midMin = 5;
+    const band = (ch: string) => {
+      const i = RAMP.indexOf(ch);
+      return i >= brightMin ? 2 : i >= midMin ? 1 : 0;
+    };
+    const STYLE = [
+      { color: unit, alpha: 0.9 },
+      { color: phosphor, alpha: 0.8 },
+      { color: alert, alpha: 1 },
+    ];
 
     let width = 0, height = 0, dpr = 1, cellW = 10, cellH = 20;
     let raf = 0, last = 0;
     let visible = true;
+    let cancelled = false;
     let rx = 0.35, ry = 0;
     let tx = 0, ty = 0, px = 0, py = 0; // pointer tilt target / current
 
@@ -37,7 +50,7 @@ export default function AsciiOctahedron({ variant = "hero", className = "" }: Pr
       canvas.height = Math.floor(height * dpr);
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
-      cellW = variant === "wallpaper" ? 8 : width < 768 ? 14 : 10;
+      cellW = variant === "wallpaper" ? 8 : window.innerWidth < 768 ? 14 : 10;
       cellH = cellW * 2;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.font = `${cellW * 1.6}px "JetBrains Mono", monospace`;
@@ -60,19 +73,20 @@ export default function AsciiOctahedron({ variant = "hero", className = "" }: Pr
       ctx.clearRect(0, 0, width, height);
       const offX = (width - cols * cellW) / 2;
       const offY = (height - rows * cellH) / 2;
-      ctx.globalAlpha = 0.8;
-      ctx.fillStyle = phosphor;
-      for (let r = 0; r < rows; r++) {
-        const line = lines[r];
-        for (let c = 0; c < cols; c++) {
-          const ch = line[c];
-          if (ch === " ") continue;
-          const bright = RAMP.indexOf(ch) >= brightMin;
-          if (bright) { ctx.globalAlpha = 1; ctx.fillStyle = alert; }
-          ctx.fillText(ch, offX + c * cellW, offY + r * cellH);
-          if (bright) { ctx.globalAlpha = 0.8; ctx.fillStyle = phosphor; }
+      // One pass per colour band keeps fillStyle switches to three per frame.
+      for (let b = 0; b < STYLE.length; b++) {
+        ctx.globalAlpha = STYLE[b].alpha;
+        ctx.fillStyle = STYLE[b].color;
+        for (let r = 0; r < rows; r++) {
+          const line = lines[r];
+          for (let c = 0; c < cols; c++) {
+            const ch = line[c];
+            if (ch === " " || band(ch) !== b) continue;
+            ctx.fillText(ch, offX + c * cellW, offY + r * cellH);
+          }
         }
       }
+      ctx.globalAlpha = 1;
     };
 
     const loop = (t: number) => {
@@ -108,10 +122,16 @@ export default function AsciiOctahedron({ variant = "hero", className = "" }: Pr
     resize();
     draw(0);
     start();
-    // Re-measure once the webfont is ready so glyphs use JetBrains Mono.
-    document.fonts?.ready.then(() => { resize(); draw(0); });
+    // Re-measure once the webfont is loaded so glyphs use JetBrains Mono.
+    const redraw = () => { if (!cancelled) { resize(); draw(0); } };
+    const fonts = document.fonts;
+    if (fonts) {
+      (typeof fonts.load === "function" ? fonts.load('16px "JetBrains Mono"') : fonts.ready)
+        .then(redraw, redraw);
+    }
 
     return () => {
+      cancelled = true;
       cancelAnimationFrame(raf);
       ro.disconnect();
       io.disconnect();

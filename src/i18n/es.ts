@@ -11,6 +11,9 @@ export const es: Dict = {
     menu: "MENÚ",
     close: "CERRAR",
     hint: "⚠ EMERGENCIA — PRESIONA ⊞ SUPER",
+    brand: "SLYLEM0",
+    est: "EST. 2024",
+    sections: "Secciones",
   },
   hero: {
     coords: "LAT 3.90° N · LONG 76.30° W",
@@ -19,6 +22,13 @@ export const es: Dict = {
     viewSessions: "[ VER SESIONES ]",
     contact: "[ CONTACTO ]",
     hint: "⚠ EMERGENCIA — PRESIONA ⊞ SUPER",
+    base: "BASE · BUGA, CO",
+    description: "Backends serverless en AWS, construidos desde una terminal Linux en Buga, Colombia.",
+    notation: "ESPERANDO LA SIGUIENTE SESIÓN",
+    systemActive: "SISTEMA.ACTIVO",
+    sync: "SINC 400%",
+    version: "V1.0.0",
+    rendering: "◐ RENDERIZANDO",
   },
   about: {
     title: "EPISODIO 01: EL CONSTRUCTOR DE BUGA",
