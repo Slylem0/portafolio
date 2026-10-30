@@ -13,6 +13,8 @@
   --amber: #f5c542;
   --bone: #e8e6df;
   --motion: 1;
+  /* unit tint that keeps small text >= 4.5:1 on --bg */
+  --unit-soft: color-mix(in srgb, var(--unit), var(--bone) 35%);
 
   /* shadcn semantic tokens mapped to the palette (dark-only site) */
   --background: var(--bg);
@@ -64,6 +66,7 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
+  --color-unit-soft: var(--unit-soft);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-border: var(--border);

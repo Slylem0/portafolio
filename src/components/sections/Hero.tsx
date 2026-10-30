@@ -69,7 +69,7 @@ export default function Hero() {
 
       {/* Coordinates (top-right) */}
       <div className="relative z-10 flex justify-between px-7 pt-6 font-mono text-[10px] tracking-widest text-bone/70 md:justify-end md:gap-6 md:px-12 md:pt-10">
-        <span className="hidden text-unit md:inline">{t.hero.base}</span>
+        <span className="hidden text-unit-soft md:inline">{t.hero.base}</span>
         <span className="text-phosphor">{t.hero.coords}</span>
       </div>
 
@@ -85,7 +85,7 @@ export default function Hero() {
             id="hero-title"
             className="font-mono text-[2.1rem] font-bold leading-[1.05] tracking-[0.1em] text-bone sm:text-5xl 2xl:text-6xl"
           >
-            <span className="block">{first}</span>
+            <span className="block">{first}</span>{" "}
             <span className="block text-alert">{last}</span>
           </h1>
 

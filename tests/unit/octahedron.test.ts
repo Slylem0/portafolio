@@ -21,4 +21,9 @@ describe("renderOctahedron", () => {
     const b = renderOctahedron({ cols: 80, rows: 40, rx: 0.3, ry: 0.9 }).join("\n");
     expect(a).not.toBe(b);
   });
+  it("a typical frame shades faces with at least 5 distinct ramp characters", () => {
+    const out = renderOctahedron({ cols: 80, rows: 40, rx: 0.6, ry: 0.8 }).join("");
+    const used = new Set([...out].filter((ch) => ch !== " "));
+    expect(used.size).toBeGreaterThanOrEqual(5);
+  });
 });

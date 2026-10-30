@@ -8,6 +8,32 @@ const ITEMS = ["home", "about", "skills", "sessions", "log"] as const;
 const focusRing =
   "outline-none focus-visible:ring-2 focus-visible:ring-phosphor focus-visible:ring-offset-2 focus-visible:ring-offset-bg";
 
+/** Four-square Super/Windows key glyph (JetBrains Mono has no "⊞"). */
+function SuperKey() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 12 12" className="inline-block size-[1.1em] shrink-0 align-[-0.15em]">
+      <rect x="0.5" y="0.5" width="11" height="11" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1" />
+      <rect x="3" y="3" width="2.6" height="2.6" fill="currentColor" />
+      <rect x="6.4" y="3" width="2.6" height="2.6" fill="currentColor" />
+      <rect x="3" y="6.4" width="2.6" height="2.6" fill="currentColor" />
+      <rect x="6.4" y="6.4" width="2.6" height="2.6" fill="currentColor" />
+    </svg>
+  );
+}
+
+/** Renders the dictionary hint copy, swapping the "⊞" glyph for the SVG key. */
+function HintLabel({ text }: { text: string }) {
+  const [before, after] = text.split("⊞");
+  if (after === undefined) return <>{text}</>;
+  return (
+    <>
+      <span>{before.trimEnd()}</span>
+      <SuperKey />
+      <span>{after.trimStart()}</span>
+    </>
+  );
+}
+
 export default function Navbar() {
   const { lang, t, setLang } = useLang();
   const [open, setOpen] = useState(false);
@@ -99,49 +125,53 @@ export default function Navbar() {
           <button
             type="button"
             data-testid="omarchy-hint"
+            aria-label={t.nav.hint.replace(/\s*⊞\s*/, " ")}
             onClick={openOmarchy}
             className={cn(
               "hint-blink group relative flex h-8 w-full items-center justify-center gap-2 px-3 font-mono text-[10px] font-bold tracking-widest whitespace-nowrap text-alert transition-colors hover:bg-alert hover:text-bg lg:w-auto lg:border lg:border-alert/70 lg:text-[11px]",
               focusRing,
             )}
           >
-            {t.nav.hint}
+            <HintLabel text={t.nav.hint} />
           </button>
         </div>
       </nav>
 
       {/* Mobile panel */}
-      {open && (
-        <div id="mobile-nav" className="border-t border-bone/20 bg-bg/95 px-4 pb-5 pt-3 md:hidden">
-          <ul className="flex flex-col">
-            {ITEMS.map((id) => (
-              <li key={id} className="border-b border-bone/10">
-                <a
-                  href={`#${id}`}
-                  onClick={() => setOpen(false)}
-                  className={cn(
-                    "flex items-center justify-between py-3 font-mono text-xs tracking-widest text-bone/85 hover:text-phosphor",
-                    focusRing,
-                  )}
-                >
-                  {t.nav[id]}
-                  <span aria-hidden="true" className="text-bone/30">▸</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-          <button
-            type="button"
-            onClick={toggleLang}
-            className={cn(
-              "mt-4 w-full border border-bone/30 py-2.5 font-mono text-xs tracking-widest text-bone hover:border-phosphor hover:text-phosphor",
-              focusRing,
-            )}
-          >
-            {t.nav.lang}
-          </button>
-        </div>
-      )}
+      <nav
+        id="mobile-nav"
+        aria-label={t.nav.menu}
+        hidden={!open}
+        className="border-t border-bone/20 bg-bg/95 px-4 pb-5 pt-3 md:hidden"
+      >
+        <ul className="flex flex-col">
+          {ITEMS.map((id) => (
+            <li key={id} className="border-b border-bone/10">
+              <a
+                href={`#${id}`}
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "flex items-center justify-between py-3 font-mono text-xs tracking-widest text-bone/85 hover:text-phosphor",
+                  focusRing,
+                )}
+              >
+                {t.nav[id]}
+                <span aria-hidden="true" className="text-bone/30">▸</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <button
+          type="button"
+          onClick={toggleLang}
+          className={cn(
+            "mt-4 w-full border border-bone/30 py-2.5 font-mono text-xs tracking-widest text-bone hover:border-phosphor hover:text-phosphor",
+            focusRing,
+          )}
+        >
+          {t.nav.lang}
+        </button>
+      </nav>
     </header>
   );
 }

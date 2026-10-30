@@ -21,8 +21,8 @@ export default function AsciiOctahedron({ variant = "hero", className = "" }: Pr
     const unit = css.getPropertyValue("--unit").trim() || "#7b4dff";
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const speed = reduced ? 0.2 : 1;
-    // Shading bands: dim faces (' .:-=') in unit purple, mid ('+*') in phosphor, lit ('#%@') in alert.
-    const brightMin = RAMP.length - 3;
+    // Shading bands: dim (' .:-=') in unit purple, mid and edges ('+*#') in phosphor, highlights ('%@') in alert.
+    const brightMin = RAMP.length - 2;
     const midMin = 5;
     const band = (ch: string) => {
       const i = RAMP.indexOf(ch);
@@ -50,7 +50,7 @@ export default function AsciiOctahedron({ variant = "hero", className = "" }: Pr
       canvas.height = Math.floor(height * dpr);
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
-      cellW = variant === "wallpaper" ? 8 : window.innerWidth < 768 ? 14 : 10;
+      cellW = variant === "wallpaper" ? 8 : window.innerWidth < 768 ? 7 : 10;
       cellH = cellW * 2;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.font = `${cellW * 1.6}px "JetBrains Mono", monospace`;

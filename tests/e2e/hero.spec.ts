@@ -18,7 +18,9 @@ test("hero shows name, coordinates and hint", async ({ page }) => {
   await expect(hero.getByText("LAT 3.90° N · LONG 76.30° W").first()).toBeVisible();
   const hint = page.getByTestId("omarchy-hint");
   await expect(hint).toBeVisible();
-  await expect(hint).toHaveText("⚠ EMERGENCY — PRESS ⊞ SUPER");
+  await expect(hint).toHaveText(/⚠ EMERGENCY — PRESS\s*SUPER/);
+  await expect(hint).toHaveAccessibleName("⚠ EMERGENCY — PRESS SUPER");
+  await expect(hint.locator("svg")).toBeVisible(); // Super-key icon replaces the "⊞" glyph
   // Hint must be reachable without scrolling.
   const box = await hint.boundingBox();
   const vh = page.viewportSize()!.height;
