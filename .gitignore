@@ -26,3 +26,7 @@ pnpm-debug.log*
 # tests
 test-results/
 playwright-report/
+
+# amplify
+amplify_outputs.json
+.amplify/

@@ -1,11 +1,20 @@
 version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - nvm install 24 && nvm use 24
+        - node -v
+        - npm ci
+        - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
 frontend:
   phases:
     preBuild:
       commands:
         - nvm install 24 && nvm use 24
         - node -v
-        - npm ci
+        # node_modules is already installed by the backend phase (same container)
+        - if [ ! -d node_modules ]; then npm ci; fi
     build:
       commands:
         - npm run build
