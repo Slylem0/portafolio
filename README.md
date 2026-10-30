@@ -114,7 +114,7 @@ Requires Node.js ≥ 22.23.4. `.nvmrc` pins Node 24, the version Amplify builds 
 ```sh
 npm i              # install dependencies
 npm run dev        # dev server at http://localhost:4321
-npm test           # Vitest unit tests (106)
+npm test           # Vitest unit tests (116)
 npm run e2e        # Playwright: builds, previews, tests desktop 1280×800 and mobile 390×844
 npm run check      # astro check (TypeScript and .astro diagnostics)
 npx ampx sandbox   # deploy a personal copy of the backend to your AWS account; writes amplify_outputs.json
@@ -124,17 +124,17 @@ Without `amplify_outputs.json`, the site still works: TRIAD runs in local mode. 
 
 ## Tests
 
-- **106 Vitest unit tests** in 12 files. They cover:
+- **116 Vitest unit tests** in 12 files. They cover:
   - the octahedron projection and character ramp
   - dwindle tiling (no overlaps, full coverage)
   - keyboard shortcuts and the terminal parser
   - the i18n dictionaries (EN and ES must have identical keys)
-  - the TRIAD client's fallback paths (timeout, 429, 502, malformed body)
-  - the Lambda: the parser, rate limiter and handler, with mocked Bedrock and DynamoDB
-- **43 Playwright scenarios**, run on desktop (1280×800) and mobile (390×844): 86 runs, of which 22 are skipped on purpose because they only apply to one viewport. They cover:
+  - the TRIAD client's fallback paths (timeout, 429 quota and busy, 502, malformed body)
+  - the Lambda: the parser, rate limiters (per IP and global) and handler, with mocked Bedrock and DynamoDB
+- **48 Playwright scenarios**, run on desktop (1280×800) and mobile (390×844): 96 runs, of which 24 are skipped on purpose because they only apply to one viewport. They cover:
   - navigation and the language toggle
   - Omarchy Mode activation and shortcuts
-  - TRIAD online and offline
+  - TRIAD online, offline and quota reached
   - keyboard focus visibility and reduced motion
   - no horizontal scroll at 390 px
 

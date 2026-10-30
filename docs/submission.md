@@ -166,8 +166,8 @@ I built it with an AI coding agent (Claude Code), as the challenge's Day 2 guide
   - mobile: Performance 95, Accessibility 100, Best Practices 100, SEO 100
 - **Bundle:** about 100 KB of gzipped JavaScript on the normal page. The Omarchy Mode code loads only when you open it.
 - **Tests:**
-  - 106 Vitest unit tests
-  - 43 Playwright end-to-end scenarios on desktop (1280×800) and mobile (390×844): 64 runs pass, and 22 are skipped on purpose because they only apply to one viewport
+  - 116 Vitest unit tests
+  - 48 Playwright end-to-end scenarios on desktop (1280×800) and mobile (390×844): 72 runs pass, and 24 are skipped on purpose because they only apply to one viewport
 - **Backend behavior:**
   - Production backend verified live: the deployed Function URL, called from the site origin with a Spanish question, returned 200 with three cores in about 1 s and `Access-Control-Allow-Origin` set to the site.
   - On the sandbox, a Bedrock-backed answer took about 0.7–1.3 s.
