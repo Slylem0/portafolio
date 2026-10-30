@@ -154,7 +154,7 @@ export default function Triad() {
               setQuestion(e.target.value);
               if (error) setError(false);
             }}
-            className="om-chip w-full min-w-0 bg-transparent px-2 py-1.5 text-base text-bone caret-[var(--om-accent)] outline-none placeholder:text-bone/40 focus:border-[var(--om-accent)] md:text-xs"
+            className="om-chip w-full min-w-0 bg-transparent px-2 py-1.5 text-base text-bone caret-[var(--om-accent)] outline-none placeholder:text-bone/60 focus:border-[var(--om-accent)] md:text-xs"
           />
           <span id="triad-counter" className="flex justify-between text-[10px] text-bone/55">
             <span role="alert">{error ? t.triad.empty : ""}</span>

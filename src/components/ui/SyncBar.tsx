@@ -41,7 +41,7 @@ export default function SyncBar({ name, sync, tag, label, className }: SyncBarPr
         </span>
         <span className="shrink-0 font-medium tabular-nums tracking-wider text-bone">
           {value}
-          <span className="text-bone/50">%</span>
+          <span className="text-bone/65">%</span>
         </span>
       </div>
       <div aria-hidden="true" className="flex h-2.5 gap-[2px]">

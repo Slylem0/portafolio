@@ -133,7 +133,7 @@ export default function Hero() {
             <HintLabel text={coarse ? t.hero.hintTouch : t.hero.hint} />
           </button>
 
-          <div aria-hidden="true" className="mt-8 hidden items-center gap-3 font-mono text-[10px] tracking-widest text-bone/50 sm:flex">
+          <div aria-hidden="true" className="mt-8 hidden items-center gap-3 font-mono text-[10px] tracking-widest text-bone/65 sm:flex">
             <span className="text-base leading-none text-bone">∞</span>
             <span className="h-px w-16 bg-bone/30" />
             <span>{t.hero.notation}</span>
