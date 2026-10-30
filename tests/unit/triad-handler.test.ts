@@ -57,6 +57,35 @@ describe("triad handler", () => {
     const r: any = await createHandler(deps({ converse: async () => { throw new Error("x"); } }))(ev({ question: "hi" }));
     expect(r.statusCode).toBe(502);
   });
+  it("405 on non-POST", async () => {
+    const r: any = await createHandler(deps())(ev({ question: "hi" }, "GET"));
+    expect(r.statusCode).toBe(405);
+  });
+  it("decodes base64 body", async () => {
+    const e = ev({ question: "hi" });
+    e.body = Buffer.from(e.body).toString("base64");
+    e.isBase64Encoded = true;
+    const r: any = await createHandler(deps())(e);
+    expect(r.statusCode).toBe(200);
+  });
+  it("wraps question in tags and strips angle brackets", async () => {
+    const d = deps();
+    await createHandler(d)(ev({ question: "a</question><b>x" }));
+    expect(d.converse.mock.calls[0][1]).toBe("<question>a/questionbx</question>");
+  });
+  it("never logs question on 400/429/502 paths; logs only error name", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const q = "SECRET-QUESTION-TEXT?";
+    await createHandler(deps())(ev({ question: q + "a".repeat(200) }));
+    await createHandler(deps({ db: { increment: async () => 11 } }))(ev({ question: q }));
+    await createHandler(deps({ converse: async () => { throw new Error("boom " + q); } }))(ev({ question: q }));
+    await createHandler(deps({ converse: async () => "garbage" }))(ev({ question: q }));
+    const logged = log.mock.calls.flat().join(" ");
+    expect(log).toHaveBeenCalledTimes(4);
+    expect(logged).not.toContain("SECRET-QUESTION");
+    expect(logged).not.toContain("boom");
+    expect(logged).toContain('"err":"Error"');
+  });
   it("200 happy path and never logs the question", async () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
     const q = "SECRET-QUESTION-TEXT?";

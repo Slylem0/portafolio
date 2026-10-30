@@ -47,6 +47,21 @@ describe("parseModelOutput", () => {
   });
 });
 
+describe("parseModelOutput leniency", () => {
+  it("accepts lowercase votes", () => {
+    const r = parseModelOutput(JSON.stringify(mk(["yes", "No", "yes"])));
+    expect(r?.cores.map((c) => c.vote)).toEqual(["YES", "NO", "YES"]);
+  });
+  it("falls back to balanced scan when trailing braces break whole-slice parse", () => {
+    const r = parseModelOutput(JSON.stringify(mk(["YES", "YES", "NO"])) + " {note}");
+    expect(r?.verdict).toBe("APPROVED");
+  });
+  it("balanced scan handles braces inside strings", () => {
+    const r = parseModelOutput("x " + JSON.stringify(mk(["YES", "YES", "NO"], "a } b { c")) + " tail }");
+    expect(r?.cores[0].line).toBe("a } b { c");
+  });
+});
+
 describe("validateQuestion", () => {
   it("accepts and trims", () => {
     expect(validateQuestion({ question: "  hi?  ", lang: "es" })).toEqual({ question: "hi?", lang: "es" });
