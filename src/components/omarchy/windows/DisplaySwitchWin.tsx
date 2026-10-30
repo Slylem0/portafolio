@@ -1,14 +1,14 @@
 import { useLang } from "@/i18n";
 import { cn } from "@/lib/utils";
 
-export type Theme = "eva" | "bebop" | "omarchy";
-export const THEMES: Theme[] = ["eva", "bebop", "omarchy"];
+export type Theme = "mono" | "inverse" | "terminal";
+export const THEMES: Theme[] = ["mono", "inverse", "terminal"];
 
-/** Swatches for the mini previews (accent, secondary, background). */
+/** Greys for the mini previews (accent, secondary, background). */
 const PREVIEW: Record<Theme, [string, string, string]> = {
-  eva: ["#ff6a00", "#7b4dff", "#0a0812"],
-  bebop: ["#f5c542", "#1e3a8a", "#050a1a"],
-  omarchy: ["#39ff88", "#1c7f44", "#040605"],
+  mono: ["#f5f5f5", "#737373", "#0a0a0a"],
+  inverse: ["#0a0a0a", "#a3a3a3", "#f5f5f5"],
+  terminal: ["#ffffff", "#525252", "#000000"],
 };
 
 /** Win+P-style picker (homage to the Omarchy Display Switch plugin): one tile per theme. */
@@ -45,7 +45,7 @@ export default function DisplaySwitchWin({ theme, onTheme }: { theme: Theme; onT
                 <span className="h-1.5 w-2" style={{ background: b }} />
                 <span className="h-px w-8" style={{ background: b }} />
               </span>
-              <span className="font-bebop text-lg leading-none tracking-wider">{ds[th]}</span>
+              <span className="font-sans text-sm leading-none font-semibold tracking-[-0.01em]">{ds[th]}</span>
               <span className="hidden text-[10px] leading-tight text-bone/60 @md:block">{ds.desc[th]}</span>
             </button>
           );

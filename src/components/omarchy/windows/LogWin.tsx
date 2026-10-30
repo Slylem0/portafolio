@@ -1,5 +1,6 @@
 import { useLang } from "@/i18n";
 import { log } from "@/data/log";
+import { monoGlyphs } from "@/lib/utils";
 
 export default function LogWin() {
   const { lang, t } = useLang();
@@ -12,7 +13,7 @@ export default function LogWin() {
             <span aria-hidden="true" className="hex absolute top-1 -left-[5px] size-2.5 bg-[var(--om-accent)]" />
             <p className="om-accent font-mono text-[10px] tracking-widest">{e.date}</p>
             <p className="font-bold text-bone">{e.title[lang]}</p>
-            <p className="text-bone/75">{e.detail[lang]}</p>
+            <p className="text-bone/75">{monoGlyphs(e.detail[lang])}</p>
           </li>
         ))}
       </ol>

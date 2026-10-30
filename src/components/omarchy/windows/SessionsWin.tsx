@@ -10,9 +10,9 @@ export function SessionDetail({ session, lang, t }: { session: Session; lang: La
     <article className="min-w-0">
       <p className="om-accent font-mono text-[10px] tracking-[0.3em]">
         {t.sessions.session} #{num(session.n)}
-        {session.stars !== undefined && <span className="ml-2 text-amber">★ {session.stars}</span>}
+        {session.stars !== undefined && <span className="ml-2 text-bone">★ {session.stars}</span>}
       </p>
-      <h3 className="mt-1 font-bebop text-3xl leading-none tracking-wide text-bone">{session.name}</h3>
+      <h3 className="mt-1 font-sans text-2xl leading-tight font-bold tracking-[-0.03em] text-bone">{session.name}</h3>
       <p className="mt-2 text-bone/85">{session.pitch[lang]}</p>
       <ul className="mt-3 flex flex-wrap gap-1" aria-label={t.sessions.stack}>
         {session.stack.map((s) => (
@@ -22,7 +22,7 @@ export function SessionDetail({ session, lang, t }: { session: Session; lang: La
         ))}
       </ul>
       {session.status && (
-        <p className="mt-3 border-l-2 border-amber bg-jazz/60 px-2 py-1.5 font-mono text-[10px] text-amber">
+        <p className="mt-3 border border-dashed border-bone/40 px-2 py-1.5 font-mono text-[10px] text-bone/85">
           {session.status[lang]}
         </p>
       )}

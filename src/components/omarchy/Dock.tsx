@@ -44,7 +44,7 @@ export default function Dock({ typing, active, names, onWorkspace, onTerminal, o
           <span aria-hidden="true" className="om-accent">▢</span> {d.close} {kbd("Q")}
         </button>
         <button type="button" onClick={onExit} className={item}>
-          <span aria-hidden="true" className="text-alert">⏻</span> {d.exit} {kbd("ESC")}
+          <span aria-hidden="true" className="om-accent">⏻</span> {d.exit} {kbd("ESC")}
         </button>
         <p aria-live="polite" className="om-muted ml-4 hidden tracking-widest lg:block">
           {typing ? d.keysHint : d.keys}

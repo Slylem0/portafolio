@@ -52,7 +52,7 @@ test.describe("desktop", () => {
     await expect(bar).toContainText("now playing ♪ lo-fi jazz");
     await expect(bar.locator("[data-workspace]")).toHaveCount(5);
     await expect(page.getByTestId("omarchy-boot")).toHaveCount(0);
-    await expect(root).toHaveAttribute("data-theme", /^(eva|bebop|omarchy)$/);
+    await expect(root).toHaveAttribute("data-theme", /^(mono|inverse|terminal)$/);
     // Dock exposes the plain-key hints.
     await expect(page.getByTestId("omarchy-dock")).toContainText("1–5 · T · P · Q · ESC");
   });
@@ -276,8 +276,8 @@ test.describe("desktop", () => {
       })
       .toBe(true);
     // Display Switch re-themes the desktop.
-    await page.getByRole("button", { name: /Bebop/ }).click();
-    await expect(page.getByTestId("omarchy")).toHaveAttribute("data-theme", "bebop");
+    await page.getByRole("button", { name: /Inverse/ }).click();
+    await expect(page.getByTestId("omarchy")).toHaveAttribute("data-theme", "inverse");
     await page.getByTestId("omarchy").focus();
     await page.keyboard.press("q");
     await expect(wins).toHaveCount(2);

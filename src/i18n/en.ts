@@ -129,14 +129,14 @@ export const en = {
     displaySwitch: {
       hint: "Win+P-style picker from my open-source Omarchy plugin. Press P again to cycle.",
       desc: {
-        eva: "Emergency orange · unit purple",
-        bebop: "Jazz blue · amber",
-        omarchy: "Phosphor green on black",
+        mono: "White on black",
+        inverse: "Black on white",
+        terminal: "Grey on pure black, mono type",
       },
       title: "Display Switch",
-      eva: "Eva",
-      bebop: "Bebop",
-      omarchy: "Omarchy",
+      mono: "Mono",
+      inverse: "Inverse",
+      terminal: "Terminal",
     },
     terminal: {
       inputLabel: "Terminal command",

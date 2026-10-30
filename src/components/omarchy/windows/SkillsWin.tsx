@@ -1,13 +1,7 @@
 import { useLang } from "@/i18n";
-import { skills, type SkillGroup } from "@/data/skills";
-import SyncBar, { type SyncColor } from "@/components/ui/SyncBar";
+import { skills } from "@/data/skills";
+import SyncBar from "@/components/ui/SyncBar";
 
-const GROUP_COLOR: Record<SkillGroup["id"], SyncColor> = {
-  cloud: "alert",
-  languages: "phosphor",
-  linux: "unit",
-  ai: "amber",
-};
 const LEARNING_BELOW = 50;
 
 export default function SkillsWin() {
@@ -23,7 +17,6 @@ export default function SkillsWin() {
                 key={it.name}
                 name={it.name}
                 sync={it.sync}
-                color={GROUP_COLOR[g.id]}
                 tag={it.sync < LEARNING_BELOW ? t.skills.learning : undefined}
               />
             ))}

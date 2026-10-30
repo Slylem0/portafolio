@@ -131,14 +131,14 @@ export const es: Dict = {
     displaySwitch: {
       hint: "Selector estilo Win+P de mi plugin open source para Omarchy. Presiona P otra vez para rotar.",
       desc: {
-        eva: "Naranja de emergencia · púrpura unidad",
-        bebop: "Azul jazz · ámbar",
-        omarchy: "Verde fósforo sobre negro",
+        mono: "Blanco sobre negro",
+        inverse: "Negro sobre blanco",
+        terminal: "Gris sobre negro puro, tipografía mono",
       },
       title: "Display Switch",
-      eva: "Eva",
-      bebop: "Bebop",
-      omarchy: "Omarchy",
+      mono: "Mono",
+      inverse: "Inverso",
+      terminal: "Terminal",
     },
     terminal: {
       inputLabel: "Comando de terminal",

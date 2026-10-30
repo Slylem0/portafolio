@@ -119,10 +119,10 @@ export default function Triad() {
             className={cn(
               "border px-1.5 py-0.5 text-[10px] tracking-widest",
               !result.offline
-                ? "border-phosphor/60 text-phosphor"
+                ? "border-bone/60 text-bone"
                 : quota
-                  ? "border-amber/70 text-amber"
-                  : "border-alert/70 text-alert",
+                  ? "border-dashed border-bone/60 text-bone"
+                  : "border-bone bg-bone font-bold text-bg",
             )}
           >
             {linkLabel}
@@ -201,12 +201,11 @@ export default function Triad() {
               data-testid="triad-core"
               data-vote={vote ?? ""}
               className={cn("triad-core flex items-center gap-3 @lg:flex-col @lg:text-center", vote && "is-lit")}
-              style={{ "--core": vote === "YES" ? "var(--phosphor)" : vote === "NO" ? "var(--alert)" : "var(--om-inactive)" } as React.CSSProperties}
             >
               <span aria-hidden="true" className={cn("triad-hex shrink-0", pending && "motion-safe:animate-pulse")}>
                 <span className="triad-hex-ring hex">
                   <span className="triad-hex-face hex">
-                    <span className="font-bebop text-2xl tracking-wider text-[var(--core)]">
+                    <span className="font-sans text-lg font-bold tracking-[-0.01em]">
                       {vote === "YES" ? t.triad.yes : vote === "NO" ? t.triad.no : pending ? "···" : "—"}
                     </span>
                   </span>
@@ -238,8 +237,8 @@ export default function Triad() {
             data-testid="triad-resolution"
             data-verdict={verdict}
             className={cn(
-              "triad-banner border-y-2 py-2 text-center font-eva text-lg font-extrabold tracking-wider break-words @md:text-2xl",
-              verdict === "APPROVED" ? "border-phosphor text-phosphor" : "border-alert text-alert",
+              "triad-banner border-y-2 py-2 text-center font-sans text-lg font-bold tracking-[-0.02em] break-words @md:text-2xl",
+              verdict === "APPROVED" ? "border-bone bg-bone text-bg" : "border-dashed border-bone text-bone",
             )}
           >
             {resolution}

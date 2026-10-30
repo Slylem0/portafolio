@@ -7,31 +7,44 @@
   background: var(--om-bg);
 }
 
-/* Display Switch themes */
-.om-root[data-theme="eva"] {
-  --om-accent: var(--alert);
-  --om-accent-2: var(--unit);
-  --om-bg: #0a0812;
-  --om-win-bg: rgb(13 10 22 / 0.94);
-  --om-inactive: rgb(123 77 255 / 0.4);
-  --om-muted: color-mix(in srgb, var(--unit), var(--bone) 45%);
+/* Display Switch themes: three monochrome variants. Remapping --bone / --bg / --panel here makes every
+   Tailwind colour utility inside the overlay follow the theme (they are declared @theme inline). */
+.om-root[data-theme="mono"] {
+  --om-accent: #f5f5f5;
+  --om-accent-2: #a3a3a3;
+  --om-bg: #0a0a0a;
+  --om-win-bg: rgb(10 10 10 / 0.94);
+  --om-inactive: #404040;
+  --om-muted: #a3a3a3;
 }
-.om-root[data-theme="bebop"] {
-  --om-accent: var(--amber);
-  --om-accent-2: color-mix(in srgb, var(--jazz), var(--bone) 30%);
-  --om-bg: #050a1a;
-  --om-win-bg: rgb(8 14 34 / 0.94);
-  --om-inactive: color-mix(in srgb, var(--jazz), var(--bone) 12%);
-  --om-muted: color-mix(in srgb, var(--jazz), var(--bone) 60%);
+.om-root[data-theme="inverse"] {
+  --bone: #0a0a0a;
+  --bg: #f5f5f5;
+  --panel: #ebebeb;
+  --g-100: #262626;
+  --g-300: #525252;
+  --om-accent: #0a0a0a;
+  --om-accent-2: #525252;
+  --om-bg: #f5f5f5;
+  --om-win-bg: rgb(250 250 250 / 0.96);
+  --om-inactive: #a3a3a3;
+  --om-muted: #525252;
 }
-.om-root[data-theme="omarchy"] {
-  --om-accent: var(--phosphor);
-  --om-accent-2: color-mix(in srgb, var(--phosphor), var(--bg) 50%);
-  --om-bg: #040605;
-  --om-win-bg: rgb(6 10 8 / 0.95);
-  --om-inactive: rgb(57 255 136 / 0.22);
-  --om-muted: color-mix(in srgb, var(--phosphor), var(--bone) 55%);
+.om-root[data-theme="terminal"] {
+  --bone: #d4d4d4;
+  --bg: #000000;
+  --panel: #000000;
+  --om-accent: #ffffff;
+  --om-accent-2: #d4d4d4;
+  --om-bg: #000000;
+  --om-win-bg: rgb(0 0 0 / 0.97);
+  --om-inactive: #737373;
+  --om-muted: #b3b3b3;
+  font-family: var(--font-mono);
 }
+.om-root[data-theme="terminal"] .font-sans { font-family: var(--font-mono); }
+/* The wallpaper canvas paints white glyphs: flip it for the light theme. */
+.om-root[data-theme="inverse"] .om-wall { filter: invert(1); }
 
 .om-accent { color: var(--om-accent); }
 .om-muted { color: var(--om-muted); }
@@ -49,7 +62,7 @@
 .om-wall { opacity: 0.4; }
 .om-vignette { background: radial-gradient(ellipse at center, transparent 30%, var(--om-bg) 85%); }
 
-/* Tiled windows: Hyprland-like borders, gradient active border, animated reflow. */
+/* Tiled windows: Hyprland-like hairline borders, solid active border, animated reflow. */
 .om-win {
   position: absolute;
   left: 0;
@@ -64,8 +77,7 @@
 }
 .om-win[data-focused="true"] {
   padding: 2px;
-  background: linear-gradient(45deg, var(--om-accent), var(--om-accent-2));
-  box-shadow: 0 0 28px -10px var(--om-accent);
+  background: var(--om-accent);
 }
 .om-win:focus-visible { outline: none; }
 .om-win-inner {
@@ -87,14 +99,22 @@
   from { opacity: 0; translate: calc(var(--dir, 1) * 4%) 0; }
 }
 
-/* Boot sequence */
-.om-hexes {
-  background-color: color-mix(in srgb, var(--alert) 55%, #d00000);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='98'%3E%3Cpath d='M28 66 0 50V17L28 1l28 16v33L28 66Zm0 32V66' fill='none' stroke='%23000' stroke-opacity='.35' stroke-width='2'/%3E%3C/svg%3E");
+/* Boot sequence: inverted frame (white screen, black type) with thin scanlines. */
+.om-invert {
+  background-color: var(--bone);
+  color: var(--bg);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0.07) 0,
+    rgb(0 0 0 / 0.07) 1px,
+    transparent 1px,
+    transparent 4px
+  );
 }
+/* A soft grey flicker (never a full black/white strobe); off under reduced motion. */
 .om-alert-flash { animation: om-alert-flash 0.4s steps(1, end) 3; }
 @keyframes om-alert-flash {
-  50% { background-color: color-mix(in srgb, var(--alert) 30%, #6a0000); }
+  50% { background-color: #d4d4d4; }
 }
 .om-line { opacity: 0; animation: om-line 1ms forwards; }
 @keyframes om-line {
@@ -102,28 +122,32 @@
 }
 .om-fade { opacity: 0; transition: opacity 300ms ease-out; }
 
-/* TRIAD: hexagon cores (ring + face) that light up with their vote colour. */
-.triad-hex { display: block; transition: filter 300ms ease-out; }
+/* TRIAD: hexagon cores (ring + face). YES = solid hex, black type. NO = outlined hex. Idle = grey ring. */
+.triad-hex { display: block; }
 .triad-hex-ring {
   display: grid;
   width: 4.6rem;
   height: 4rem;
   padding: 2px;
-  background: var(--core);
+  background: var(--om-inactive);
   transition: background-color 300ms ease-out;
 }
 .triad-hex-face {
   display: grid;
   place-items: center;
   background: var(--om-win-bg);
+  color: var(--om-muted);
 }
-.triad-core.is-lit .triad-hex { filter: drop-shadow(0 0 10px var(--core)); }
-.triad-core.is-lit .triad-hex-face {
-  background: color-mix(in srgb, var(--core), var(--om-win-bg) 84%);
-  animation: triad-lit 420ms ease-out;
+.triad-core[data-vote="YES"] .triad-hex-ring,
+.triad-core[data-vote="YES"] .triad-hex-face {
+  background: var(--bone);
+  color: var(--bg);
 }
+.triad-core[data-vote="NO"] .triad-hex-ring { background: var(--bone); }
+.triad-core[data-vote="NO"] .triad-hex-face { background: var(--om-win-bg); color: var(--bone); }
+.triad-core.is-lit .triad-hex { animation: triad-lit 420ms ease-out; }
 @keyframes triad-lit {
-  from { background: color-mix(in srgb, var(--core), var(--om-win-bg) 30%); }
+  from { opacity: 0.2; transform: scale(0.92); }
 }
 .triad-banner { animation: triad-banner 380ms var(--om-ease); }
 @keyframes triad-banner {

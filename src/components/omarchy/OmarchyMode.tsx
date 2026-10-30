@@ -10,9 +10,9 @@ const THEME_KEY = "omarchy-theme";
 function loadTheme(): Theme {
   try {
     const v = localStorage.getItem(THEME_KEY);
-    return THEMES.includes(v as Theme) ? (v as Theme) : "eva";
+    return THEMES.includes(v as Theme) ? (v as Theme) : "mono";
   } catch {
-    return "eva";
+    return "mono";
   }
 }
 function saveTheme(v: Theme) {

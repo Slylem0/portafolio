@@ -78,7 +78,7 @@ export default function TopBar({ active, names, focusedTitle, onWorkspace, onDis
         <button
           type="button"
           onClick={onExit}
-          className={cn("om-focus h-6 border border-alert/70 px-1.5 font-bold tracking-widest text-alert hover:bg-alert hover:text-bg")}
+          className={cn("om-focus h-6 border border-bone/60 px-1.5 font-bold tracking-widest text-bone hover:bg-bone hover:text-bg")}
         >
           <span aria-hidden="true">✕ </span>
           {tb.exit.replace(/^✕\s*/, "")}

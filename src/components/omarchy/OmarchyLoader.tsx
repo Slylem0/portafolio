@@ -138,13 +138,13 @@ export default function OmarchyLoader() {
 
   if (open && Mode) return <Mode onExit={exit} />;
   if (open)
-    // Immediate feedback while the chunk downloads: the boot's red frame. Esc or a tap cancels.
+    // Immediate feedback while the chunk downloads: the boot's inverted white frame. Esc or a tap cancels.
     return (
       <div
         role="status"
         data-testid="omarchy-linking"
         onClick={() => cancelRef.current()}
-        className="fixed inset-0 z-[60] grid place-items-center bg-[color-mix(in_srgb,var(--alert)_55%,#d00000)] font-bebop text-3xl tracking-[0.4em] text-bg"
+        className="fixed inset-0 z-[60] grid place-items-center bg-bone font-mono text-xl font-bold tracking-[0.4em] text-bg"
       >
         {t.omarchy.linking}
       </div>
@@ -153,9 +153,9 @@ export default function OmarchyLoader() {
     return (
       <div
         role="alert"
-        className="fixed inset-x-4 bottom-4 z-[60] mx-auto max-w-md border border-alert bg-bg px-4 py-3 font-mono text-xs text-bone shadow-lg"
+        className="fixed inset-x-4 bottom-4 z-[60] mx-auto max-w-md border border-bone bg-bg px-4 py-3 font-mono text-xs text-bone shadow-lg"
       >
-        <span aria-hidden="true" className="text-alert">⚠ </span>
+        <span aria-hidden="true" className="font-bold">⚠ </span>
         {t.omarchy.loadError}
       </div>
     );

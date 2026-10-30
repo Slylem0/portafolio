@@ -10,18 +10,18 @@ const LOG_MS = 1500;
 const FADE_MS = 300;
 const STATIC_MS = 400;
 
-/** Splits "[ OK ] message" so the status tag can be coloured. */
+/** Splits "[ OK ] message" so the status tag can be set in bold white. */
 function BootLine({ text }: { text: string }) {
   const m = /^(\[\s*OK\s*\])\s*(.*)$/.exec(text);
   if (!m) return <>{text}</>;
   return (
     <>
-      <span className="text-phosphor">{m[1]}</span> {m[2]}
+      <span className="font-bold text-bone">{m[1]}</span> <span className="text-g-300">{m[2]}</span>
     </>
   );
 }
 
-/** Emergency boot: red hex alert, systemd-style boot log, fade. Any key or tap skips. */
+/** Emergency boot: inverted white frame, systemd-style boot log, fade. Any key or tap skips. */
 /** Escape or Ctrl/Cmd+K leaves Omarchy Mode right away; other keys skip to the desktop (browser shortcuts pass through). */
 export default function Boot({ onDone, onExit, reduced }: { onDone(): void; onExit(): void; reduced: boolean }) {
   const { t } = useLang();
@@ -85,12 +85,12 @@ export default function Boot({ onDone, onExit, reduced }: { onDone(): void; onEx
       className="absolute inset-0 cursor-pointer overflow-hidden select-none"
     >
       {phase === "alert" ? (
-        <div className="om-hexes om-alert-flash absolute inset-0 flex flex-col items-center justify-center gap-4 px-4 text-center">
-          <p className="font-bebop text-2xl tracking-[0.4em] text-bg sm:text-4xl">{t.omarchy.alert}</p>
-          <div className="w-full max-w-4xl border-y-4 border-bg bg-bg px-4 py-5 sm:py-8">
-            <p className="font-eva text-3xl leading-tight font-extrabold text-alert sm:text-6xl">{t.omarchy.pattern}</p>
+        <div className="om-invert om-alert-flash absolute inset-0 flex flex-col items-center justify-center gap-6 px-4 text-center">
+          <p className="font-mono text-xs font-bold tracking-[0.5em] sm:text-sm">{t.omarchy.alert}</p>
+          <div className="w-full max-w-4xl border-y border-current px-4 py-6 sm:py-10">
+            <p className="font-sans text-3xl leading-[1.02] font-bold tracking-[-0.04em] sm:text-6xl">{t.omarchy.pattern}</p>
           </div>
-          <p className="font-bebop text-2xl tracking-[0.4em] text-bg sm:text-4xl">{t.omarchy.alert}</p>
+          <p className="font-mono text-xs font-bold tracking-[0.5em] sm:text-sm">{t.omarchy.alert}</p>
         </div>
       ) : (
         <div
@@ -99,7 +99,7 @@ export default function Boot({ onDone, onExit, reduced }: { onDone(): void; onEx
             phase === "fade" && "om-fade",
           )}
         >
-          <p className="mb-4 font-eva text-xl font-extrabold text-alert sm:text-3xl">{t.omarchy.pattern}</p>
+          <p className="mb-4 font-sans text-xl font-bold tracking-[-0.03em] text-bone sm:text-3xl">{t.omarchy.pattern}</p>
           <ul>
             {t.omarchy.boot.map((line, i) => (
               <li

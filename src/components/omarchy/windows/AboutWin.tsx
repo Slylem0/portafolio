@@ -20,7 +20,7 @@ export default function AboutWin() {
     <div className="grid gap-4 @xl:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
       <div>
         <p className="om-accent font-mono text-[10px] tracking-[0.3em]">{t.about.dossier}</p>
-        <p className="mt-1 font-eva text-xl leading-tight font-extrabold text-bone">{profile.name}</p>
+        <p className="mt-1 font-sans text-xl leading-tight font-bold tracking-[-0.03em] text-bone">{profile.name}</p>
         <p className="om-muted font-mono text-[11px]">{profile.role[lang]}</p>
         <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 font-mono text-[11px]">
           {rows.map(([k, v]) => (
