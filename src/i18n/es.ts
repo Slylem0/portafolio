@@ -81,6 +81,10 @@ export const es: Dict = {
     end: "FIN DE LA TRANSMISIÓN",
   },
   omarchy: {
+    alert: "EMERGENCIA",
+    label: "Modo Omarchy — escritorio en mosaico",
+    empty: "Espacio vacío. Presiona T para abrir una terminal.",
+    closeWindow: "Cerrar {title}",
     pattern: "PATRÓN DETECTADO: CONSTRUCTOR",
     skip: "presiona cualquier tecla para saltar",
     boot: [
@@ -92,6 +96,7 @@ export const es: Dict = {
       "[ OK ] Bienvenido, constructor.",
     ],
     topBar: {
+      workspace: "Espacio {n}: {name}",
       workspaces: "Espacios de trabajo",
       lang: "LANG",
       nowPlaying: "sonando ♪ lo-fi jazz",
@@ -105,18 +110,33 @@ export const es: Dict = {
       log: "Bitácora",
     },
     dock: {
+      label: "Dock",
+      keys: "1–5 · T · P · Q · ESC",
+      keysHint: "mantén Ctrl mientras escribes",
+      swipe: "desliza ⇆ para cambiar",
       terminal: "Terminal",
       displaySwitch: "Display Switch",
       close: "Cerrar ventana",
       exit: "Salir",
     },
     displaySwitch: {
+      hint: "Selector estilo Win+P de mi plugin open source para Omarchy. Presiona P otra vez para rotar.",
+      desc: {
+        eva: "Naranja de emergencia · púrpura unidad",
+        bebop: "Azul jazz · ámbar",
+        omarchy: "Verde fósforo sobre negro",
+      },
       title: "Display Switch",
       eva: "Eva",
       bebop: "Bebop",
       omarchy: "Omarchy",
     },
+    triadWin: {
+      title: "TRIAD — conectando",
+      body: "Tres núcleos asesores se están calentando. El espacio 4 recibirá tus preguntas pronto.",
+    },
     terminal: {
+      inputLabel: "Comando de terminal",
       title: "Terminal",
       welcome: "Bienvenido a la shell del portafolio. Escribe 'help' para ver los comandos.",
       help: [

@@ -79,6 +79,10 @@ export const en = {
     end: "END OF TRANSMISSION",
   },
   omarchy: {
+    alert: "EMERGENCY",
+    label: "Omarchy Mode — tiling desktop",
+    empty: "Empty workspace. Press T for a terminal.",
+    closeWindow: "Close {title}",
     pattern: "PATTERN DETECTED: BUILDER",
     skip: "press any key to skip",
     boot: [
@@ -90,6 +94,7 @@ export const en = {
       "[ OK ] Welcome, builder.",
     ],
     topBar: {
+      workspace: "Workspace {n}: {name}",
       workspaces: "Workspaces",
       lang: "LANG",
       nowPlaying: "now playing ♪ lo-fi jazz",
@@ -103,18 +108,33 @@ export const en = {
       log: "Log",
     },
     dock: {
+      label: "Dock",
+      keys: "1–5 · T · P · Q · ESC",
+      keysHint: "hold Ctrl while typing",
+      swipe: "swipe ⇆ to switch",
       terminal: "Terminal",
       displaySwitch: "Display Switch",
       close: "Close window",
       exit: "Exit",
     },
     displaySwitch: {
+      hint: "Win+P-style picker from my open-source Omarchy plugin. Press P again to cycle.",
+      desc: {
+        eva: "Emergency orange · unit purple",
+        bebop: "Jazz blue · amber",
+        omarchy: "Phosphor green on black",
+      },
       title: "Display Switch",
       eva: "Eva",
       bebop: "Bebop",
       omarchy: "Omarchy",
     },
+    triadWin: {
+      title: "TRIAD — coming online",
+      body: "Three advisory cores are warming up. Workspace 4 will take your questions soon.",
+    },
     terminal: {
+      inputLabel: "Terminal command",
       title: "Terminal",
       welcome: "Welcome to the portfolio shell. Type 'help' to list commands.",
       help: [

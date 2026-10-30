@@ -7,6 +7,7 @@ import Skills from "@/components/sections/Skills";
 import Sessions from "@/components/sections/Sessions";
 import MissionLog from "@/components/sections/MissionLog";
 import Footer from "@/components/sections/Footer";
+import OmarchyLoader from "@/components/omarchy/OmarchyLoader";
 ---
 
 <Base
@@ -22,4 +23,5 @@ import Footer from "@/components/sections/Footer";
     <MissionLog client:visible />
   </main>
   <Footer client:visible />
+  <OmarchyLoader client:idle />
 </Base>

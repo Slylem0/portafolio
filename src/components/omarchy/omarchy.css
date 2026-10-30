@@ -1,0 +1,114 @@
+/* Omarchy Mode: loaded only with the lazy Omarchy chunk. */
+
+.om-root {
+  --om-gap: 8px;
+  --om-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  color: var(--bone);
+  background: var(--om-bg);
+}
+
+/* Display Switch themes */
+.om-root[data-theme="eva"] {
+  --om-accent: var(--alert);
+  --om-accent-2: var(--unit);
+  --om-bg: #0a0812;
+  --om-win-bg: rgb(13 10 22 / 0.94);
+  --om-inactive: rgb(123 77 255 / 0.4);
+  --om-muted: color-mix(in srgb, var(--unit), var(--bone) 45%);
+}
+.om-root[data-theme="bebop"] {
+  --om-accent: var(--amber);
+  --om-accent-2: color-mix(in srgb, var(--jazz), var(--bone) 30%);
+  --om-bg: #050a1a;
+  --om-win-bg: rgb(8 14 34 / 0.94);
+  --om-inactive: color-mix(in srgb, var(--jazz), var(--bone) 12%);
+  --om-muted: color-mix(in srgb, var(--jazz), var(--bone) 60%);
+}
+.om-root[data-theme="omarchy"] {
+  --om-accent: var(--phosphor);
+  --om-accent-2: color-mix(in srgb, var(--phosphor), var(--bg) 50%);
+  --om-bg: #040605;
+  --om-win-bg: rgb(6 10 8 / 0.95);
+  --om-inactive: rgb(57 255 136 / 0.22);
+  --om-muted: color-mix(in srgb, var(--phosphor), var(--bone) 55%);
+}
+
+.om-accent { color: var(--om-accent); }
+.om-muted { color: var(--om-muted); }
+.om-bar { background: color-mix(in srgb, var(--om-bg), transparent 15%); border-color: var(--om-inactive); }
+.om-chip { border: 1px solid var(--om-inactive); }
+.om-chip[aria-current="true"],
+.om-chip[aria-pressed="true"] {
+  background: var(--om-accent);
+  border-color: var(--om-accent);
+  color: var(--bg);
+}
+.om-focus:focus-visible { outline: 2px solid var(--om-accent); outline-offset: 2px; }
+
+/* Wallpaper: faded ASCII octahedron with a theme vignette. */
+.om-wall { opacity: 0.4; }
+.om-vignette { background: radial-gradient(ellipse at center, transparent 30%, var(--om-bg) 85%); }
+
+/* Tiled windows: Hyprland-like borders, gradient active border, animated reflow. */
+.om-win {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  padding: 1px;
+  background: var(--om-inactive);
+  transition:
+    transform 280ms var(--om-ease),
+    width 280ms var(--om-ease),
+    height 280ms var(--om-ease);
+}
+.om-win[data-focused="true"] {
+  padding: 2px;
+  background: linear-gradient(45deg, var(--om-accent), var(--om-accent-2));
+  box-shadow: 0 0 28px -10px var(--om-accent);
+}
+.om-win:focus-visible { outline: none; }
+.om-win-inner {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--om-win-bg);
+}
+.om-win-new { animation: om-win-in 260ms var(--om-ease); }
+@keyframes om-win-in {
+  from { opacity: 0; scale: 0.92; }
+}
+
+/* Workspace layer slides in when shown (animation replays on display:none -> block). */
+.om-ws { animation: om-ws-in 300ms var(--om-ease); }
+@keyframes om-ws-in {
+  from { opacity: 0; translate: calc(var(--dir, 1) * 4%) 0; }
+}
+
+/* Boot sequence */
+.om-hexes {
+  background-color: color-mix(in srgb, var(--alert) 55%, #d00000);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='98'%3E%3Cpath d='M28 66 0 50V17L28 1l28 16v33L28 66Zm0 32V66' fill='none' stroke='%23000' stroke-opacity='.35' stroke-width='2'/%3E%3C/svg%3E");
+}
+.om-alert-flash { animation: om-alert-flash 0.4s steps(1, end) 3; }
+@keyframes om-alert-flash {
+  50% { background-color: color-mix(in srgb, var(--alert) 30%, #6a0000); }
+}
+.om-line { opacity: 0; animation: om-line 1ms forwards; }
+@keyframes om-line {
+  to { opacity: 1; }
+}
+.om-fade { opacity: 0; transition: opacity 300ms ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .om-win,
+  .om-ws,
+  .om-win-new,
+  .om-alert-flash,
+  .om-fade {
+    transition: none !important;
+    animation: none !important;
+  }
+}
