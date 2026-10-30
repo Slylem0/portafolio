@@ -1,0 +1,162 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --bg: #07070a;
+  --alert: #ff6a00;
+  --unit: #7b4dff;
+  --phosphor: #39ff88;
+  --jazz: #1e3a8a;
+  --amber: #f5c542;
+  --bone: #e8e6df;
+  --motion: 1;
+
+  /* shadcn semantic tokens mapped to the palette (dark-only site) */
+  --background: var(--bg);
+  --foreground: var(--bone);
+  --card: #0e0e14;
+  --card-foreground: var(--bone);
+  --popover: #0e0e14;
+  --popover-foreground: var(--bone);
+  --primary: var(--alert);
+  --primary-foreground: var(--bg);
+  --secondary: #16161f;
+  --secondary-foreground: var(--bone);
+  --muted: #16161f;
+  --muted-foreground: #a09e96;
+  --accent: #16161f;
+  --accent-foreground: var(--bone);
+  --destructive: var(--alert);
+  --border: rgb(232 230 223 / 14%);
+  --input: rgb(232 230 223 / 18%);
+  --ring: var(--phosphor);
+  --radius: 0.25rem;
+}
+
+@theme {
+  --color-bg: #07070a;
+  --color-alert: #ff6a00;
+  --color-unit: #7b4dff;
+  --color-phosphor: #39ff88;
+  --color-jazz: #1e3a8a;
+  --color-amber: #f5c542;
+  --color-bone: #e8e6df;
+
+  --font-eva: "Shippori Mincho", serif;
+  --font-bebop: "Bebas Neue", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    background: var(--bg);
+    font-family: var(--font-mono);
+  }
+  body {
+    background: var(--bg);
+    color: var(--bone);
+    overflow-x: hidden;
+  }
+}
+
+/* Motifs */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.scanlines {
+  position: fixed;
+  inset: 0;
+  z-index: 51;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0.18) 0,
+    rgb(0 0 0 / 0.18) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+.warning-stripes {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--alert) 0 12px,
+    var(--bg) 12px 24px
+  );
+}
+
+.hex-divider {
+  height: 14px;
+  opacity: 0.6;
+  background:
+    linear-gradient(60deg, transparent 45%, var(--unit) 45% 55%, transparent 55%) 0 0 / 24px 14px,
+    linear-gradient(-60deg, transparent 45%, var(--unit) 45% 55%, transparent 55%) 0 0 / 24px 14px;
+}
+
+.dither {
+  background-image:
+    radial-gradient(var(--bone) 0.6px, transparent 0.7px),
+    radial-gradient(var(--bone) 0.6px, transparent 0.7px);
+  background-size: 4px 4px;
+  background-position: 0 0, 2px 2px;
+  opacity: 0.12;
+}
+
+@keyframes flash {
+  0%, 100% { background-color: transparent; }
+  50% { background-color: color-mix(in srgb, var(--alert) 35%, transparent); }
+}
+
+.flash {
+  animation: flash 0.6s steps(2, end) 3;
+}
+
+.smash-cut {
+  animation: flash 0.2s steps(1, end) 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion: 0;
+  }
+  .flash,
+  .smash-cut {
+    animation: none !important;
+  }
+}
