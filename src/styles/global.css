@@ -5,59 +5,56 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --bg: #07070a;
-  --alert: #ff6a00;
-  --unit: #7b4dff;
-  --phosphor: #39ff88;
-  --jazz: #1e3a8a;
-  --amber: #f5c542;
-  --bone: #e8e6df;
+  /* Monochrome palette: black, white and neutral greys only (R = G = B). */
+  --bg: #0a0a0a;
+  --bone: #f5f5f5;
+  --panel: #111111;
+  --ink: #0a0a0a;
+  --g-100: #e5e5e5;
+  --g-300: #a3a3a3;
+  --g-500: #737373;
+  --g-700: #404040;
+  --g-800: #262626;
   --motion: 1;
-  /* unit tint that keeps small text >= 4.5:1 on --bg */
-  --unit-soft: color-mix(in srgb, var(--unit), var(--bone) 35%);
-  /* raised dark surface for cards and link plates */
-  --panel: #0b0b10;
-  /* poster ink on bone paper (body copy uses the softer ink, still >= 7:1) */
-  --ink: #1c1810;
-  --ink-soft: #2e2a22;
 
   /* shadcn semantic tokens mapped to the palette (dark-only site) */
   --background: var(--bg);
   --foreground: var(--bone);
-  --card: #0e0e14;
+  --card: var(--panel);
   --card-foreground: var(--bone);
-  --popover: #0e0e14;
+  --popover: var(--panel);
   --popover-foreground: var(--bone);
-  --primary: var(--alert);
+  --primary: var(--bone);
   --primary-foreground: var(--bg);
-  --secondary: #16161f;
+  --secondary: var(--g-800);
   --secondary-foreground: var(--bone);
-  --muted: #16161f;
-  --muted-foreground: #a09e96;
-  --accent: #16161f;
+  --muted: var(--g-800);
+  --muted-foreground: var(--g-300);
+  --accent: var(--g-800);
   --accent-foreground: var(--bone);
-  --destructive: var(--alert);
-  --border: rgb(232 230 223 / 14%);
-  --input: rgb(232 230 223 / 18%);
-  --ring: var(--phosphor);
+  --destructive: var(--g-100);
+  --border: rgb(245 245 245 / 14%);
+  --input: rgb(245 245 245 / 18%);
+  --ring: var(--bone);
   --radius: 0.25rem;
 }
 
 @theme {
-  --color-bg: #07070a;
-  --color-alert: #ff6a00;
-  --color-unit: #7b4dff;
-  --color-phosphor: #39ff88;
-  --color-jazz: #1e3a8a;
-  --color-amber: #f5c542;
-  --color-bone: #e8e6df;
-
-  --font-eva: "Shippori Mincho", serif;
-  --font-bebop: "Bebas Neue", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
 }
 
+/* Inline so a subtree (Omarchy's inverse theme) can remap --bone / --bg and every utility follows. */
 @theme inline {
+  --color-bg: var(--bg);
+  --color-bone: var(--bone);
+  --color-panel: var(--panel);
+  --color-ink: var(--ink);
+  --color-g-100: var(--g-100);
+  --color-g-300: var(--g-300);
+  --color-g-500: var(--g-500);
+  --color-g-700: var(--g-700);
+  --color-g-800: var(--g-800);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -71,10 +68,6 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
-  --color-unit-soft: var(--unit-soft);
-  --color-panel: var(--panel);
-  --color-ink: var(--ink);
-  --color-ink-soft: var(--ink-soft);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-border: var(--border);
@@ -92,7 +85,8 @@
   }
   html {
     background: var(--bg);
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
     scroll-padding-top: 5.5rem;
   }
   @media (prefers-reduced-motion: no-preference) {
@@ -101,6 +95,8 @@
     }
   }
   body {
+    /* Ask for text (monochrome) presentation of emoji-capable glyphs such as ⚠ and ★. */
+    font-variant-emoji: text;
     background: var(--bg);
     color: var(--bone);
     overflow-x: hidden;
@@ -131,20 +127,34 @@
   );
 }
 
-.warning-stripes {
-  background: repeating-linear-gradient(
-    -45deg,
-    var(--alert) 0 12px,
-    var(--bg) 12px 24px
-  );
+/* Dot band (replaces warning stripes): two offset dot grids, like a 1-bit dither. */
+.dots {
+  background-image:
+    radial-gradient(var(--bone) 0.75px, transparent 1px),
+    radial-gradient(var(--bone) 0.75px, transparent 1px);
+  background-size: 6px 6px;
+  background-position: 0 0, 3px 3px;
+  opacity: 0.45;
+}
+.dots-ink {
+  background-image:
+    radial-gradient(var(--bg) 0.75px, transparent 1px),
+    radial-gradient(var(--bg) 0.75px, transparent 1px);
+  background-size: 6px 6px;
+  background-position: 0 0, 3px 3px;
 }
 
+/* 1-bit dither strip: horizontal hairlines every other pixel (hero-ascii homage). */
+.dither-pattern {
+  background-image: repeating-linear-gradient(0deg, transparent 0 1px, var(--bone) 1px 2px);
+  background-size: 3px 3px;
+  opacity: 0.35;
+}
+
+/* Row of outlined flat-top hexagons in grey (neutral geometry, no colour). */
 .hex-divider {
-  height: 14px;
-  opacity: 0.6;
-  background:
-    linear-gradient(60deg, transparent 45%, var(--unit) 45% 55%, transparent 55%) 0 0 / 24px 14px,
-    linear-gradient(-60deg, transparent 45%, var(--unit) 45% 55%, transparent 55%) 0 0 / 24px 14px;
+  height: 12px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='12'%3E%3Cpath d='M4.5 1h7l3.5 5-3.5 5h-7L1 6z' fill='none' stroke='%23737373' stroke-width='1'/%3E%3C/svg%3E") 0 0 / 22px 12px repeat-x;
 }
 
 .dither {
@@ -156,24 +166,17 @@
   opacity: 0.12;
 }
 
-/* Aged bounty-poster paper: bone base, faint foxing stains, darkened edges. Kept light so ink text stays >= 7:1. */
-.paper {
-  color: var(--ink);
-  background-color: var(--bone);
-  background-image:
-    radial-gradient(ellipse at 12% 8%, rgb(150 110 50 / 0.16), transparent 42%),
-    radial-gradient(ellipse at 88% 92%, rgb(150 110 50 / 0.18), transparent 45%),
-    radial-gradient(circle at 70% 30%, rgb(150 110 50 / 0.07), transparent 25%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.27 0 0 0 0 0.12 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
-  box-shadow:
-    inset 0 0 0 1px rgb(28 24 16 / 0.25),
-    inset 0 0 38px rgb(120 85 35 / 0.22),
-    0 18px 40px -18px rgb(0 0 0 / 0.8);
+/* Spec-sheet card: black panel on a faint dot grid. */
+.blueprint {
+  background-color: var(--panel);
+  background-image: radial-gradient(rgb(245 245 245 / 0.09) 1px, transparent 1.2px);
+  background-size: 16px 16px;
+  background-position: 8px 8px;
 }
 
-/* Halftone dots in ink, for the poster "photo" plate. */
+/* Dot grid plate inside the spec sheet (the old poster "photo"). */
 .halftone {
-  background-image: radial-gradient(rgb(30 58 138 / 0.55) 1px, transparent 1.3px);
+  background-image: radial-gradient(rgb(245 245 245 / 0.22) 1px, transparent 1.3px);
   background-size: 6px 6px;
 }
 
@@ -184,7 +187,7 @@
 
 @keyframes flash {
   0%, 100% { background-color: transparent; }
-  50% { background-color: color-mix(in srgb, var(--alert) 35%, transparent); }
+  50% { background-color: rgb(245 245 245 / 0.2); }
 }
 
 .flash {
@@ -214,13 +217,13 @@
 
 /* Omarchy hint: HUD alarm blink on the panel only, text stays full-contrast */
 @keyframes hint-blink {
-  0%, 55%, 100% { background-color: color-mix(in srgb, var(--alert) 8%, transparent); }
-  65%, 90% { background-color: color-mix(in srgb, var(--alert) 26%, transparent); }
+  0%, 55%, 100% { background-color: rgb(245 245 245 / 0.04); }
+  65%, 90% { background-color: rgb(245 245 245 / 0.14); }
 }
 
 @layer components {
   .hint-blink {
-    background-color: color-mix(in srgb, var(--alert) 8%, transparent);
+    background-color: rgb(245 245 245 / 0.04);
     animation: hint-blink 2.4s steps(1, end) infinite;
   }
   .hint-blink:hover,
