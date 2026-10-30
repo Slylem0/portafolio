@@ -54,7 +54,7 @@ I'm Pablo Nicolás Marín, a Systems Engineering student at Universidad del Vall
 | 12 | `docs/screenshots/12-dynamodb.png` | DynamoDB: the `TriadUsage` table's items (hashed keys, `count`, `ttl`) | The rate limiter: one counter per hashed IP per hour, deleted by TTL. |
 | 13 | `docs/screenshots/13-cloudwatch.png` | CloudWatch Logs: the triad log group with several JSON log lines | One structured line per request (status, length, latency), never the question text. |
 | 14 | `docs/screenshots/14-bedrock-access.png` | Bedrock console: model access showing Amazon Nova Lite as granted in us-east-1 | Amazon Nova Lite enabled in us-east-1. |
-| 15 | `docs/screenshots/15-budget.png` | AWS Budgets, after creating the USD 5 budget: the monthly cost budget with its email alert | A USD 5/month budget alert as the final cost guard. |
+| 15 | `docs/screenshots/15-budget.png` | AWS Budgets: the `portafolio-monthly-5usd` monthly cost budget with its email alerts | A USD 5/month budget alert as the final cost guard. |
 | 16 | `docs/screenshots/16-lighthouse.png` | Lighthouse report for the live URL (desktop). Re-run Lighthouse on the live URL for this capture. | Lighthouse: performance, accessibility, best practices and SEO. |
 
 ## AWS architecture and services
@@ -80,7 +80,7 @@ Everything runs in **us-east-1**, and the backend is defined as code with Amplif
 | **Amazon DynamoDB** | Rate limits: 30 questions per IP per hour (room for a group behind one shared NAT) and 300 per hour for everyone together. The per-IP key is an HMAC of the IP plus the hour, so no raw IPs are stored, and TTL deletes items after 2 h. | Atomic `UpdateItem` counters, on-demand billing, and nothing to clean up. |
 | **AWS IAM** | The function's role allows `bedrock:InvokeModel` on the two Nova Lite ARNs and `dynamodb:UpdateItem` on the one table. | Least privilege by design. |
 | **Amazon CloudWatch Logs** | One JSON line per request: status, question length, language, whether it retried, and latency. Logs are kept for 2 weeks. | Enough to debug, without keeping what people asked. |
-| **AWS Budgets** | Planned: a USD 5/month alert, set up before submission. | A safety net under all the other limits. |
+| **AWS Budgets** | A USD 5/month budget with email alerts at 80% actual and 100% forecast. | A safety net under all the other limits. |
 
 There are more limits in code:
 

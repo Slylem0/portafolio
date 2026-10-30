@@ -88,7 +88,7 @@ The whole backend is code in [`amplify/backend.ts`](amplify/backend.ts) (Amplify
 | **Amazon DynamoDB** | A `TriadUsage` table (on-demand) holding a counter per hashed IP per hour, plus one global counter per hour. Two atomic `UpdateItem ... ADD` per request (per IP, then global), and TTL deletes items after 2 h. | Rate limiting with no servers, almost no cost, and no raw IPs stored. |
 | **AWS IAM** | The Lambda role can call `bedrock:InvokeModel` on the two Nova Lite ARNs (inference profile and foundation model) and `dynamodb:UpdateItem` on that one table. Nothing else besides basic logging. | Least privilege: if the function is abused, the damage is limited to these permissions. |
 | **Amazon CloudWatch Logs** | Log group kept for 2 weeks. One JSON line per request, for example `{"event":"triad","status":200,"qLen":18,"lang":"en","retried":false,"ms":1317}`. | I can debug status codes and latency without storing what visitors asked. |
-| **AWS Budgets** | Planned: a USD 5/month cost alert, set up before submission (see the checklist below). | It will alert me by email before a mistake becomes a bill. |
+| **AWS Budgets** | A USD 5/month cost budget (`portafolio-monthly-5usd`) that emails me at 80% of actual spend and when the forecast passes 100%. | It alerts me by email before a mistake becomes a bill. |
 
 ## Cost and security guards
 
@@ -105,7 +105,7 @@ The whole backend is code in [`amplify/backend.ts`](amplify/backend.ts) (Amplify
 - [ ] Enable Bedrock model access for **Amazon Nova Lite** in `us-east-1`.
 - [ ] Connect the GitHub repo to Amplify Hosting and attach a service role so the backend phase can deploy.
 - [ ] Set the branch environment variable `TRIAD_RESERVED_CONCURRENCY=0` while the Lambda concurrency quota is 10.
-- [ ] Create an **AWS Budgets** cost budget of **USD 5/month** with an email alert (Billing console → Budgets → Create budget).
+- [x] Create an **AWS Budgets** cost budget of **USD 5/month** with an email alert (Billing console → Budgets → Create budget).
 
 ## Run it locally
 
