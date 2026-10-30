@@ -88,7 +88,7 @@ The whole backend is code in [`amplify/backend.ts`](amplify/backend.ts) (Amplify
 | **Amazon DynamoDB** | A `TriadUsage` table (on-demand) holding a counter per hashed IP per hour. One atomic `UpdateItem ... ADD` per request, and TTL deletes items after 2 h. | Rate limiting with no servers, almost no cost, and no raw IPs stored. |
 | **AWS IAM** | The Lambda role can call `bedrock:InvokeModel` on the two Nova Lite ARNs (inference profile and foundation model) and `dynamodb:UpdateItem` on that one table. Nothing else besides basic logging. | Least privilege: if the function is abused, the damage is limited to these permissions. |
 | **Amazon CloudWatch Logs** | One JSON line per request, for example `{"event":"triad","status":200,"qLen":18,"lang":"en","retried":false,"ms":1317}`. | I can debug status codes and latency without storing what visitors asked. |
-| **AWS Budgets** | A USD 5/month cost alert (see the checklist below). | It alerts me by email before a mistake becomes a bill. |
+| **AWS Budgets** | Planned: a USD 5/month cost alert, set up before submission (see the checklist below). | It will alert me by email before a mistake becomes a bill. |
 
 ## Cost and security guards
 
@@ -109,7 +109,7 @@ The whole backend is code in [`amplify/backend.ts`](amplify/backend.ts) (Amplify
 
 ## Run it locally
 
-Requires Node.js ≥ 22.23. `.nvmrc` pins Node 24, the version Amplify builds with.
+Requires Node.js ≥ 22.23.4. `.nvmrc` pins Node 24, the version Amplify builds with.
 
 ```sh
 npm i              # install dependencies

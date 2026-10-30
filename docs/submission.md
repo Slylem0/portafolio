@@ -49,13 +49,13 @@ I'm Pablo Nicolás Marín, a Systems Engineering student at Universidad del Vall
 | 7 | `docs/screenshots/07-triad-online.png` | TRIAD showing three voted cores, the verdict banner and "LINK ACTIVE — AWS BEDROCK" | TRIAD: three cores answer through Amazon Nova Lite, and the verdict is computed in code. |
 | 8 | `docs/screenshots/08-triad-offline.png` | TRIAD in "LINK LOST — LOCAL MODE" (DevTools → Network → Offline, then ask) | If the backend is unreachable, TRIAD answers from a local pool instead of breaking. |
 | 9 | `docs/screenshots/09-amplify-build.png` | Amplify console: the `main` branch with a successful build (Backend + Frontend steps) | Every push to main deploys both the backend and the site through Amplify Hosting. |
-| 10 | `docs/screenshots/10-lambda.png` | Lambda console: the `triad` function's Configuration → Function URL (CORS) and General configuration (Node.js 22, 15 s) | The TRIAD Lambda: Node.js 22 behind a Function URL that only accepts the site's origin. |
+| 10 | `docs/screenshots/10-lambda.png` | Lambda console, captured from the production stack (`amplify-dx1vkp1smlyu7-main-…`): the `triad` function's Configuration → Function URL (CORS) and General configuration (Node.js 22, 15 s) | The TRIAD Lambda: Node.js 22 behind a Function URL that only accepts the site's origin. |
 | 11 | `docs/screenshots/11-iam-policy.png` | IAM: the Lambda role's inline policy (InvokeModel + UpdateItem) | Least privilege: the function can call one model and update one table, nothing else. |
 | 12 | `docs/screenshots/12-dynamodb.png` | DynamoDB: the `TriadUsage` table's items (hashed keys, `count`, `ttl`) | The rate limiter: one counter per hashed IP per hour, deleted by TTL. |
 | 13 | `docs/screenshots/13-cloudwatch.png` | CloudWatch Logs: the triad log group with several JSON log lines | One structured line per request (status, length, latency), never the question text. |
 | 14 | `docs/screenshots/14-bedrock-access.png` | Bedrock console: model access showing Amazon Nova Lite as granted in us-east-1 | Amazon Nova Lite enabled in us-east-1. |
-| 15 | `docs/screenshots/15-budget.png` | AWS Budgets: the USD 5 monthly cost budget with its email alert | A USD 5/month budget alert as the final cost guard. |
-| 16 | `docs/screenshots/16-lighthouse.png` | Lighthouse report for the live URL (desktop) | Lighthouse: performance, accessibility, best practices and SEO. |
+| 15 | `docs/screenshots/15-budget.png` | AWS Budgets, after creating the USD 5 budget: the monthly cost budget with its email alert | A USD 5/month budget alert as the final cost guard. |
+| 16 | `docs/screenshots/16-lighthouse.png` | Lighthouse report for the live URL (desktop). Re-run Lighthouse on the live URL for this capture. | Lighthouse: performance, accessibility, best practices and SEO. |
 
 ## AWS architecture and services
 
@@ -80,7 +80,7 @@ Everything runs in **us-east-1**, and the backend is defined as code with Amplif
 | **Amazon DynamoDB** | Rate limit of 10 questions per IP per hour. The key is an HMAC of the IP plus the hour, so no raw IPs are stored, and TTL deletes items after 2 h. | One atomic `UpdateItem` per request, on-demand billing, and nothing to clean up. |
 | **AWS IAM** | The function's role allows `bedrock:InvokeModel` on the two Nova Lite ARNs and `dynamodb:UpdateItem` on the one table. | Least privilege by design. |
 | **Amazon CloudWatch Logs** | One JSON line per request: status, question length, language, whether it retried, and latency. | Enough to debug, without keeping what people asked. |
-| **AWS Budgets** | A USD 5/month alert. | A safety net under all the other limits. |
+| **AWS Budgets** | Planned: a USD 5/month alert, set up before submission. | A safety net under all the other limits. |
 
 There are more limits in code:
 
@@ -104,7 +104,7 @@ I worked the way I'd want a real project to run:
 4. **Review after every task.** Each task got a review pass against the spec, and the fixes went in before the next task started.
 5. **Deploy continuously.** The site was live on Amplify from the first days, and the backend joined the same pipeline once TRIAD existed. Before wiring TRIAD to the main branch, I tested it on a personal `ampx sandbox` with real Bedrock calls: CORS from an allowed and a blocked origin, the 10-per-hour limit, and the log contents.
 
-I built it with an AI coding agent (Claude Code), as the challenge's Day 2 guide suggests. I directed the design, made the calls, and checked every result.
+I built it with an AI coding agent (Claude Code), as the challenge's Day 2 guide, "Connect your coding agent", suggests. I directed the design, made the calls, and checked every result.
 
 ## Challenges and what I learned
 
@@ -169,6 +169,7 @@ I built it with an AI coding agent (Claude Code), as the challenge's Day 2 guide
   - 106 Vitest unit tests
   - 43 Playwright end-to-end scenarios on desktop (1280×800) and mobile (390×844): 64 runs pass, and 22 are skipped on purpose because they only apply to one viewport
 - **Backend behavior:**
+  - Production backend verified live: the deployed Function URL, called from the site origin with a Spanish question, returned 200 with three cores in about 1 s and `Access-Control-Allow-Origin` set to the site.
   - On the sandbox, a Bedrock-backed answer took about 0.7–1.3 s.
   - The 11th request from one IP in an hour got a 429.
   - A request from a non-allowed origin got no CORS headers.
