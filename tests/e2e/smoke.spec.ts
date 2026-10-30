@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("page loads with title and no horizontal scroll", async ({ page }) => {
   await page.goto("/");
