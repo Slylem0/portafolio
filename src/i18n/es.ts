@@ -33,7 +33,7 @@ export const es: Dict = {
     status: "Estado",
     dailyDriver: "Entorno diario",
     sync: "Ratio de sincronía",
-    syncValue: "AWS Cloud Practitioner · 2.º año",
+    syncValue: "AWS Certified Cloud Practitioner",
   },
   skills: {
     title: "SUPERPODERES TECH",

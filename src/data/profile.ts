@@ -8,7 +8,7 @@ export const profile = {
   email: "pnicolasmarin2007@gmail.com",
   github: "https://github.com/Slylem0",
   linkedin: "https://www.linkedin.com/in/pablo-nicolas-marin",
-  status: "learning Go",
+  status: { en: "learning Go", es: "aprendiendo Go" } as Record<Lang, string>,
   dailyDriver: "Omarchy · Hyprland · Neovim · tmux",
   university: "Universidad del Valle",
 };

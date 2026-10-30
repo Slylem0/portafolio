@@ -31,7 +31,7 @@ export const en = {
     status: "Status",
     dailyDriver: "Daily driver",
     sync: "Sync ratio",
-    syncValue: "AWS Cloud Practitioner · 2nd year",
+    syncValue: "AWS Certified Cloud Practitioner",
   },
   skills: {
     title: "TECH SUPERPOWERS",

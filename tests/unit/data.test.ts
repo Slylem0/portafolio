@@ -24,6 +24,10 @@ describe("data", () => {
       expect(i.sync).toBeLessThanOrEqual(100);
     }
   });
+  it("profile status is localized", () => {
+    expect(profile.status.en).toBe("learning Go");
+    expect(profile.status.es).toBe("aprendiendo Go");
+  });
   it("log is newest first", () => {
     const d = log.map((l) => l.date);
     expect([...d].sort().reverse()).toEqual(d);
