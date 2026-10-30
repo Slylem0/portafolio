@@ -61,8 +61,12 @@ test("all interactive elements are keyboard focusable with visible outline", asy
     const info = await page.evaluate(() => {
       const el = document.activeElement as HTMLElement | null;
       if (!el || el === document.body) return null;
+      // Track elements, not labels: the navbar and hero hints share the same text.
+      const again = el.hasAttribute("data-tab-seen");
+      el.setAttribute("data-tab-seen", "");
       const cs = getComputedStyle(el);
       return {
+        again,
         id: `${el.tagName.toLowerCase()} "${(el.getAttribute("aria-label") || el.textContent || "").trim().slice(0, 30)}"`,
         width: parseFloat(cs.outlineWidth),
         style: cs.outlineStyle,
@@ -70,7 +74,7 @@ test("all interactive elements are keyboard focusable with visible outline", asy
       };
     });
     if (!info) break;
-    if (seen.includes(info.id)) break;
+    if (info.again) break;
     seen.push(info.id);
     expect(info.focusVisible, info.id).toBe(true);
     expect(info.style, info.id).not.toBe("none");
