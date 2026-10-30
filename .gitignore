@@ -30,3 +30,6 @@ playwright-report/
 # amplify
 amplify_outputs.json
 .amplify/
+
+# npm cache used by amplify.yml
+.npm/

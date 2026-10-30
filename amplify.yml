@@ -5,7 +5,7 @@ backend:
       commands:
         - nvm install 24 && nvm use 24
         - node -v
-        - npm ci
+        - npm ci --cache .npm --prefer-offline
         - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
 frontend:
   phases:
@@ -14,7 +14,7 @@ frontend:
         - nvm install 24 && nvm use 24
         - node -v
         # node_modules is already installed by the backend phase (same container)
-        - if [ ! -d node_modules ]; then npm ci; fi
+        - if [ ! -d node_modules ]; then npm ci --cache .npm --prefer-offline; fi
     build:
       commands:
         - npm run build
@@ -24,4 +24,4 @@ frontend:
       - '**/*'
   cache:
     paths:
-      - node_modules/**/*
+      - .npm/**/*
