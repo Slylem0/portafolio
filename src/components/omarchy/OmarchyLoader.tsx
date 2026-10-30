@@ -83,6 +83,11 @@ export default function OmarchyLoader() {
         }
         return;
       }
+      // Like the early inline handler: while the intro gate is up, leave the key alone entirely.
+      if (isIntroOpen()) {
+        superArmed = false;
+        return;
+      }
       const action = keyToAction(e, false);
       if (action?.type !== "open") {
         superArmed = false;

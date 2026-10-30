@@ -170,3 +170,31 @@ test("works when sessionStorage throws (shown once per page load)", async ({ pag
   await expectDismissed(page);
   expect(errors).toEqual([]);
 });
+
+test("Space dismisses without submitting the form or reloading", async ({ page }) => {
+  await page.goto("/");
+  await expect(enter(page)).toBeFocused();
+  await page.evaluate(() => ((window as unknown as { __introMarker: number }).__introMarker = 42));
+  await page.keyboard.press("Space");
+  // A late activation of the still-focused button (Firefox/WebKit fire it on keyup after close).
+  await page.evaluate(() => document.getElementById("intro-enter")?.click());
+  await expectDismissed(page);
+  await page.waitForTimeout(300);
+  expect(page.url()).not.toContain("?");
+  expect(page.url()).not.toContain("#");
+  expect(await page.evaluate(() => (window as unknown as { __introMarker?: number }).__introMarker)).toBe(42);
+});
+
+test("ENTER and the sub-line are painted from the first frame", async ({ page }) => {
+  await page.goto("/");
+  const rise = page.locator("#intro form");
+  const opacity = await rise.evaluate((el) => {
+    const a = el.getAnimations()[0];
+    if (a) {
+      a.pause();
+      a.currentTime = 0;
+    }
+    return Number(getComputedStyle(el).opacity);
+  });
+  expect(opacity).toBeGreaterThanOrEqual(0.6);
+});

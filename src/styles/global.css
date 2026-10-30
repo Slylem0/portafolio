@@ -274,14 +274,15 @@ html.intro-leaving #intro {
 #hero-title:focus {
   outline: none;
 }
+/* Painted from frame 0 (good LCP): starts at 0.6 opacity, settles in 400 ms with no delay. */
 @keyframes intro-rise {
   from {
-    opacity: 0;
-    transform: translateY(1rem);
+    opacity: 0.6;
+    transform: translateY(0.5rem);
   }
 }
 .intro-rise {
-  animation: intro-rise 1.2s ease-out 0.9s both;
+  animation: intro-rise 0.4s ease-out both;
 }
 .intro-enter > span {
   animation: intro-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
