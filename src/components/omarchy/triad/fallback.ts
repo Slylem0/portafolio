@@ -92,9 +92,14 @@ function hash(s: string): number {
   return h >>> 0;
 }
 
-/** Deterministic local answer: the same question always gets the same entry. */
+const approves = (e: Entry) => e.votes.filter((v) => v === "YES").length >= 2;
+const APPROVED_POOL = POOL.filter(approves);
+
+/** Deterministic local answer: the same question always gets the same entry; questions about Pablo approve. */
 export function localAnswer(question: string, lang: Lang): TriadResponse {
-  const e = POOL[hash(question.trim().toLowerCase()) % POOL.length];
+  const norm = question.trim().toLowerCase();
+  const pool = norm.includes("pablo") ? APPROVED_POOL : POOL;
+  const e = pool[hash(norm) % pool.length];
   const lines = lang === "es" ? e.es : e.en;
   const cores = IDS.map((id, i) => ({ id, vote: e.votes[i], line: lines[i] })) as [Core, Core, Core];
   const yes = e.votes.filter((v) => v === "YES").length;

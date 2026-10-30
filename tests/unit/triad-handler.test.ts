@@ -107,7 +107,7 @@ describe("triad handler", () => {
     expect(converse.mock.calls[0][2]).toBeUndefined();
     expect(converse.mock.calls[1][2]).toMatchObject({ temperature: 0.2 });
     expect(converse.mock.calls[1][2].timeoutMs).toBeGreaterThanOrEqual(3000);
-    expect(converse.mock.calls[1][2].timeoutMs).toBeLessThanOrEqual(13000);
+    expect(converse.mock.calls[1][2].timeoutMs).toBeLessThanOrEqual(7000);
     expect(d.db.increment).toHaveBeenCalledTimes(1);
   });
   it("502 bad_model_output after two unparseable outputs; one rate-limit increment", async () => {
@@ -123,7 +123,7 @@ describe("triad handler", () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     try {
       const converse = vi.fn(async () => {
-        vi.setSystemTime(Date.now() + 11_000);
+        vi.setSystemTime(Date.now() + 4_500);
         return "garbage";
       });
       const r: any = await createHandler(deps({ converse }))(ev({ question: "hi" }));
@@ -132,6 +132,15 @@ describe("triad handler", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+  it("logs retried flag without the question", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const converse = vi.fn().mockResolvedValueOnce("garbage").mockResolvedValueOnce(good);
+    await createHandler(deps({ converse }))(ev({ question: "SECRET-Q" }));
+    await createHandler(deps())(ev({ question: "SECRET-Q" }));
+    const lines = log.mock.calls.map((c) => JSON.parse(c[0] as string));
+    expect(lines.map((l) => l.retried)).toEqual([true, false]);
+    expect(log.mock.calls.flat().join(" ")).not.toContain("SECRET-Q");
   });
   it("does not retry when the model call throws", async () => {
     const converse = vi.fn(async () => { throw new Error("x"); });

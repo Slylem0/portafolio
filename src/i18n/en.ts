@@ -177,7 +177,7 @@ export const en = {
     tooLong: "Question too long (max 200 characters).",
     empty: "Type a question first.",
     inputLabel: "Question for TRIAD (yes/no, max 200 characters)",
-    counter: "{n}/200",
+    counter: "{n}/{max}",
     intro: "Three cores vote YES or NO on any question. Majority wins.",
     examplesLabel: "Try:",
     examples: ["Should I learn Go next?", "Is Pablo a good fit for a cloud internship?", "Pineapple on pizza?"],

@@ -179,7 +179,7 @@ export const es: Dict = {
     tooLong: "Pregunta demasiado larga (máx. 200 caracteres).",
     empty: "Escribe una pregunta primero.",
     inputLabel: "Pregunta para TRIAD (sí/no, máx. 200 caracteres)",
-    counter: "{n}/200",
+    counter: "{n}/{max}",
     intro: "Tres núcleos votan SÍ o NO a cualquier pregunta. Gana la mayoría.",
     examplesLabel: "Prueba:",
     examples: ["¿Debería aprender Go ahora?", "¿Pablo encaja en una pasantía de cloud?", "¿Piña en la pizza?"],

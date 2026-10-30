@@ -99,6 +99,15 @@ describe("localAnswer", () => {
     const seen = new Set(Array.from({ length: 60 }, (_, i) => JSON.stringify(localAnswer(`question ${i}`, "en"))));
     expect(seen.size).toBeGreaterThan(5);
   });
+  it("questions about Pablo always resolve APPROVED (deterministic)", () => {
+    for (const lang of ["en", "es"] as const) {
+      const a = localAnswer("Is Pablo a good developer?", lang);
+      expect(a.verdict).toBe("APPROVED");
+      expect(localAnswer("Is Pablo a good developer?", lang)).toEqual(a);
+      expectShape(a);
+      for (let i = 0; i < 100; i++) expect(localAnswer(`pABLO question ${i}`, lang).verdict).toBe("APPROVED");
+    }
+  });
   it("answers in the requested language", () => {
     const en = localAnswer("Should I learn Go next?", "en");
     const es = localAnswer("Should I learn Go next?", "es");

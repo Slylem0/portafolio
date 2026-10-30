@@ -28,6 +28,8 @@ export default function Triad() {
   const [shown, setShown] = useState(0);
   const [error, setError] = useState(false);
   const inFlight = useRef(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const alive = useRef(true);
   useEffect(() => {
     alive.current = true;
@@ -64,8 +66,27 @@ export default function Triad() {
       if (alive.current) setResult(r);
     } finally {
       inFlight.current = false;
-      if (alive.current) setPending(false);
+      if (alive.current) {
+        setPending(false);
+        refocus();
+      }
     }
+  };
+
+  // The disabled submit button drops focus; hand it back to the input (not on touch, where the
+  // on-screen keyboard would cover the verdict) unless the visitor has moved elsewhere meanwhile.
+  const refocus = () => {
+    requestAnimationFrame(() => {
+      const active = document.activeElement;
+      const lost = !active || active === document.body || active === rootRef.current?.closest("[data-win-id]");
+      let coarse = false;
+      try {
+        coarse = window.matchMedia("(pointer: coarse)").matches;
+      } catch {
+        /* ignore */
+      }
+      if (!coarse && (lost || rootRef.current?.contains(active))) inputRef.current?.focus({ preventScroll: true });
+    });
   };
 
   const done = !!result && shown >= 3;
@@ -76,9 +97,16 @@ export default function Triad() {
           .replace("{verdict}", verdict === "APPROVED" ? t.triad.approved : t.triad.rejected)
           .replace("{score}", scoreOf(result.response))
       : "";
+  // Concise screen-reader summary, e.g. "CORE·ENGINEER YES, CORE·COWBOY NO, CORE·STUDENT YES — RESOLUTION: APPROVED 2–1".
+  const summary =
+    done && result
+      ? `${result.response.cores
+          .map((c) => `${t.triad.cores[CORE_KEYS[c.id]]} ${c.vote === "YES" ? t.triad.yes : t.triad.no}`)
+          .join(", ")} — ${resolution}${result.offline ? `. ${t.triad.linkLost}` : ""}`
+      : "";
 
   return (
-    <div className="flex min-h-full flex-col gap-3 font-mono" data-testid="triad">
+    <div ref={rootRef} className="flex min-h-full flex-col gap-3 font-mono" data-testid="triad">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-bone/75">{t.triad.intro}</p>
         {result && (
@@ -104,6 +132,7 @@ export default function Triad() {
         <label className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="sr-only">{t.triad.inputLabel}</span>
           <input
+            ref={inputRef}
             data-testid="triad-input"
             value={question}
             maxLength={MAX_QUESTION}
@@ -120,8 +149,8 @@ export default function Triad() {
             className="om-chip w-full min-w-0 bg-transparent px-2 py-1.5 text-base text-bone caret-[var(--om-accent)] outline-none placeholder:text-bone/40 focus:border-[var(--om-accent)] md:text-xs"
           />
           <span id="triad-counter" className="flex justify-between text-[10px] text-bone/55">
-            <span role={error ? "alert" : undefined}>{error ? t.triad.empty : ""}</span>
-            <span>{t.triad.counter.replace("{n}", String(question.length))}</span>
+            <span role="alert">{error ? t.triad.empty : ""}</span>
+            <span>{t.triad.counter.replace("{n}", String(question.length)).replace("{max}", String(MAX_QUESTION))}</span>
           </span>
         </label>
         <button
@@ -187,7 +216,10 @@ export default function Triad() {
         })}
       </ol>
 
-      <div aria-live="polite" className="mt-auto min-h-12">
+      <p aria-live="polite" data-testid="triad-live" className="sr-only">
+        {pending ? t.triad.thinking : summary}
+      </p>
+      <div aria-hidden="true" className="mt-auto min-h-12">
         {pending && (
           <p data-testid="triad-status" className="om-accent text-center tracking-[0.3em] motion-safe:animate-pulse">
             {t.triad.thinking}

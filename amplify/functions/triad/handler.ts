@@ -13,8 +13,8 @@ export type Deps = {
   now(): Date;
 };
 
-// Lambda timeout is 15 s; keep the whole request (incl. one retry) under this budget.
-const BUDGET_MS = 13_000;
+// The browser gives up at 8 s; a retry is only worth it if its answer can still arrive in time.
+const BUDGET_MS = 7_000;
 // A retry needs at least this much budget left to be worth attempting.
 const MIN_RETRY_MS = 3_000;
 
@@ -29,8 +29,9 @@ export function createHandler(deps: Deps) {
     const t0 = Date.now();
     let lang = "en";
     let qLen = 0;
+    let retried = false;
     const done = (status: number, body?: unknown, errName?: string) => {
-      console.log(JSON.stringify({ event: "triad", status, qLen, lang, ms: Date.now() - t0, ...(errName ? { err: errName } : {}) }));
+      console.log(JSON.stringify({ event: "triad", status, qLen, lang, retried, ms: Date.now() - t0, ...(errName ? { err: errName } : {}) }));
       return body === undefined ? { statusCode: status } : json(status, body);
     };
 
@@ -59,6 +60,7 @@ export function createHandler(deps: Deps) {
       // Nova occasionally emits non-JSON; one cooler retry fixes most of those (same rate-limit slot).
       const left = BUDGET_MS - (Date.now() - t0);
       if (!result && left >= MIN_RETRY_MS) {
+        retried = true;
         result = parseModelOutput(await deps.converse(system, question, { temperature: 0.2, timeoutMs: left }));
       }
       if (!result) return done(502, { error: "bad_model_output" });

@@ -359,12 +359,14 @@ test.describe("TRIAD", () => {
     await submit.dblclick();
     await expect(submit).toBeDisabled();
     await expect(page.getByTestId("triad-status")).toBeVisible();
-    await page.keyboard.press("Enter"); // also ignored while pending
+    await page.getByTestId("triad-input").press("Enter"); // form submit is also ignored while pending
     release();
     await expect(page.getByTestId("triad-offline")).toHaveText("LINK LOST — LOCAL MODE");
     await expect(page.getByTestId("triad-resolution")).toHaveText(/^RESOLUTION: (APPROVED|REJECTED) [0-3]–[0-3]$/);
     await expect(page.getByTestId("triad-core").and(page.locator("[data-vote='YES'], [data-vote='NO']"))).toHaveCount(3);
     await expect(submit).toBeEnabled();
+    await expect(page.getByTestId("triad-live")).toContainText("LINK LOST — LOCAL MODE");
+    if (!isMobile) await expect(page.getByTestId("triad-input")).toBeFocused();
     expect(calls).toBe(1);
   });
 
@@ -388,6 +390,12 @@ test.describe("TRIAD", () => {
     await expect(cores.nth(1)).toHaveAttribute("data-vote", "NO");
     await expect(cores.nth(1)).toContainText("<b>not today</b>"); // model text rendered as text
     await expect(page.getByTestId("triad-online")).toBeVisible();
+    await expect(page.getByTestId("triad-live")).toHaveText(
+      "CORE·ENGINEER YES, CORE·COWBOY NO, CORE·STUDENT YES — RESOLUTION: APPROVED 2–1",
+    );
+    await expect(page.getByTestId("triad-input")).toHaveAttribute("aria-describedby", "triad-counter");
+    await expect(page.locator("#triad-counter")).toContainText("23/200");
+    if (!isMobile) await expect(page.getByTestId("triad-input")).toBeFocused();
     await expect(page.getByTestId("triad-offline")).toHaveCount(0);
     expect(bodies).toEqual([{ question: "Should I learn Go next?", lang: "en" }]);
     // Nothing overflows horizontally inside the window, nor the page.
