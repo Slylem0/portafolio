@@ -131,7 +131,7 @@ export const es: Dict = {
         "  clear           limpia la pantalla",
         "  exit            sale del Modo Omarchy",
       ],
-      whoami: "pablo — Constructor Cloud & Backend, Buga, Colombia",
+      whoami: "Pablo Nicolás Marín — Constructor Cloud & Backend · Buga, Colombia",
       unknown: "comando no encontrado: {cmd}. Prueba 'help'.",
       invalidSession: "no existe la sesión: {n}. Prueba 'ls sessions'.",
       usageOpen: "uso: open <n>",

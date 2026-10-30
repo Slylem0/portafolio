@@ -129,7 +129,7 @@ export const en = {
         "  clear           clear the screen",
         "  exit            leave Omarchy Mode",
       ],
-      whoami: "pablo — Cloud & Backend Builder, Buga, Colombia",
+      whoami: "Pablo Nicolás Marín — Cloud & Backend Builder · Buga, Colombia",
       unknown: "command not found: {cmd}. Try 'help'.",
       invalidSession: "no such session: {n}. Try 'ls sessions'.",
       usageOpen: "usage: open <n>",

@@ -1,6 +1,5 @@
 import type { Dict, Lang } from "@/i18n";
 import { sessions } from "@/data/sessions";
-import { profile } from "@/data/profile";
 
 export type TermAction =
   | { type: "openSession"; n: number }
@@ -30,7 +29,7 @@ function neofetch(): string[] {
     "WM: Hyprland",
     "Shell: zsh",
     "Editor: Neovim",
-    "Uptime: since 2024-02",
+    "Uptime: since Feb 2024 (Univalle)",
     "Cert: AWS Certified Cloud Practitioner",
     "Location: Buga, CO",
   ];
@@ -40,9 +39,10 @@ function neofetch(): string[] {
 }
 
 export function runCommand(input: string, ctx: { lang: Lang; t: Dict }): TermResult {
-  const { lang, t } = ctx;
+  const { t } = ctx;
   const tt = t.omarchy.terminal;
-  const norm = input.trim().replace(/\s+/g, " ").toLowerCase();
+  const clean = input.trim().replace(/\s+/g, " ");
+  const norm = clean.toLowerCase();
   if (!norm) return { lines: [] };
   const [cmd, ...args] = norm.split(" ");
 
@@ -50,7 +50,7 @@ export function runCommand(input: string, ctx: { lang: Lang; t: Dict }): TermRes
     case "help":
       return { lines: [...tt.help] };
     case "whoami":
-      return { lines: [tt.whoami, `${profile.name} · ${profile.role[lang]}`] };
+      return { lines: [tt.whoami] };
     case "ls":
       if (args[0] === "sessions")
         return { lines: sessions.map((s) => `${String(s.n).padStart(2, "0")}  ${s.name}`) };
@@ -62,8 +62,8 @@ export function runCommand(input: string, ctx: { lang: Lang; t: Dict }): TermRes
       return { lines: neofetch() };
     case "open": {
       if (args.length !== 1) return { lines: [tt.usageOpen] };
-      const n = Number(args[0]);
-      if (Number.isInteger(n) && sessions.some((s) => s.n === n))
+      const n = /^\d+$/.test(args[0]) ? Number(args[0]) : NaN;
+      if (sessions.some((s) => s.n === n))
         return { lines: [], action: { type: "openSession", n } };
       return { lines: [fmt(tt.invalidSession, { n: args[0] })] };
     }
@@ -78,5 +78,5 @@ export function runCommand(input: string, ctx: { lang: Lang; t: Dict }): TermRes
     case "exit":
       return { lines: [], action: { type: "exit" } };
   }
-  return { lines: [fmt(tt.unknown, { cmd: norm })] };
+  return { lines: [fmt(tt.unknown, { cmd: clean.length > 40 ? `${clean.slice(0, 40)}…` : clean })] };
 }
