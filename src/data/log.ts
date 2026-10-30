@@ -76,3 +76,23 @@ export const log: LogEntry[] = [
     },
   },
 ];
+
+export type NextMission = {
+  title: Record<Lang, string>;
+  status: Record<Lang, string>;
+};
+
+/** Goals, not achievements: rendered apart from the timeline. */
+export const nextMissions: NextMission[] = [
+  {
+    title: {
+      en: "AWS Certified Solutions Architect – Associate",
+      es: "AWS Certified Solutions Architect – Associate",
+    },
+    status: { en: "In preparation", es: "En preparación" },
+  },
+  {
+    title: { en: "AWS Certified AI Practitioner", es: "AWS Certified AI Practitioner" },
+    status: { en: "Next goal", es: "Próxima meta" },
+  },
+];

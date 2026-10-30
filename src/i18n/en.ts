@@ -71,6 +71,8 @@ export const en = {
   log: {
     title: "MISSION LOG",
     subtitle: "TIMELINE · NEWEST FIRST",
+    next: "NEXT MISSIONS",
+    queued: "QUEUED",
   },
   footer: {
     github: "GitHub",

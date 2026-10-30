@@ -1,5 +1,5 @@
 import { useLang } from "@/i18n";
-import { log } from "@/data/log";
+import { log, nextMissions } from "@/data/log";
 import { HudRule } from "@/components/ui/HudFrame";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,29 @@ export default function MissionLog() {
           {t.log.title}
         </h2>
         <div aria-hidden="true" className="hex-divider mb-12" />
+
+        {/* Goals ahead of the timeline: dashed, never styled as achievements */}
+        <div className="mb-12 border border-dashed border-amber/50 p-4 sm:p-6">
+          <h3 className="mb-4 font-mono text-xs tracking-[0.3em] text-amber">{t.log.next}</h3>
+          <ul aria-label={t.log.next} className="grid gap-3 sm:grid-cols-2">
+            {nextMissions.map((m) => (
+              <li
+                key={m.title.en}
+                className="flex min-w-0 items-start gap-3 border border-bone/15 bg-panel/60 px-3 py-3"
+              >
+                <span aria-hidden="true" className="hex mt-0.5 grid size-5 shrink-0 place-items-center bg-amber/70">
+                  <span className="hex size-3.5 bg-bg" />
+                </span>
+                <div className="min-w-0">
+                  <p className="font-mono text-sm leading-snug font-bold text-bone">{m.title[lang]}</p>
+                  <p className="mt-1 font-mono text-[11px] tracking-[0.2em] text-amber">
+                    {t.log.queued} · {m.status[lang]}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
 
         <div className="relative">
           {/* Spine: sits under the node column */}

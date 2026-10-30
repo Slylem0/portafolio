@@ -93,8 +93,12 @@ test("mission log renders timeline entries", async ({ page }) => {
   await page.goto("/");
   const log = page.locator("#log");
   await expect(log.getByRole("heading", { level: 2 })).toContainText("MISSION LOG");
-  await expect(log.getByRole("listitem")).toHaveCount(7);
+  await expect(log.locator("ol > li")).toHaveCount(7);
   await expect(log).toContainText("AWS Certified Cloud Practitioner");
+  const next = log.getByRole("list", { name: "NEXT MISSIONS" });
+  await expect(next.getByRole("listitem")).toHaveCount(2);
+  await expect(next).toContainText("Solutions Architect – Associate");
+  await expect(next).toContainText("AI Practitioner");
 });
 
 test("footer has github, linkedin, email links and sign-off", async ({ page }) => {

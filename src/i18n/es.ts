@@ -73,6 +73,8 @@ export const es: Dict = {
   log: {
     title: "BITÁCORA DE MISIÓN",
     subtitle: "LÍNEA DE TIEMPO · LO MÁS NUEVO PRIMERO",
+    next: "PRÓXIMAS MISIONES",
+    queued: "EN COLA",
   },
   footer: {
     github: "GitHub",
