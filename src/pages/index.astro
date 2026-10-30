@@ -8,6 +8,7 @@ import Sessions from "@/components/sections/Sessions";
 import MissionLog from "@/components/sections/MissionLog";
 import Footer from "@/components/sections/Footer";
 import OmarchyLoader from "@/components/omarchy/OmarchyLoader";
+import IntroGate from "@/components/intro/IntroGate";
 ---
 
 <Base
@@ -15,12 +16,95 @@ import OmarchyLoader from "@/components/omarchy/OmarchyLoader";
   description="Portfolio of Pablo Nicolás Marín: cloud and backend projects built on AWS."
 >
   <script is:inline>
+    // Intro gate (ENTER screen). Runs before first paint and owns the whole lifecycle so ENTER
+    // works before or without hydration: skip it for this session / ?nointro / #deep-links,
+    // otherwise lock the page behind it and dismiss on click, Enter, Space or Escape.
+    (function () {
+      var d = document.documentElement;
+      var KEY = "intro-seen";
+      try {
+        if (localStorage.getItem("lang") === "es") d.setAttribute("data-intro-lang", "es");
+      } catch (e) {}
+      var seen = false;
+      try {
+        seen = sessionStorage.getItem(KEY) === "1";
+      } catch (e) {}
+      if (seen || /[?&]nointro(?:[=&]|$)/.test(location.search) || location.hash.length > 1) {
+        d.classList.add("intro-skip");
+        return;
+      }
+      d.classList.add("intro-open");
+      var inerted = [];
+      function host() {
+        var el = document.getElementById("intro");
+        return el && (el.closest("astro-island") || el);
+      }
+      function lock() {
+        var h = host();
+        if (!h || !d.classList.contains("intro-open")) return;
+        for (var i = 0; i < document.body.children.length; i++) {
+          var c = document.body.children[i];
+          if (c !== h && c.tagName !== "SCRIPT" && !c.hasAttribute("inert")) {
+            c.setAttribute("inert", "");
+            inerted.push(c);
+          }
+        }
+        var b = document.getElementById("intro-enter");
+        if (b) b.focus();
+      }
+      function close(e) {
+        if (!d.classList.contains("intro-open")) return;
+        if (e) e.preventDefault();
+        try {
+          sessionStorage.setItem(KEY, "1");
+        } catch (err) {}
+        d.classList.remove("intro-open");
+        d.classList.add("intro-leaving");
+        inerted.forEach(function (c) {
+          c.removeAttribute("inert");
+        });
+        inerted = [];
+        var instant = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        setTimeout(function () {
+          var h = host();
+          if (h) h.remove();
+          d.classList.remove("intro-leaving");
+          var t = document.getElementById("hero-title");
+          if (t) {
+            t.setAttribute("tabindex", "-1");
+            t.focus({ preventScroll: true });
+          }
+          window.dispatchEvent(new Event("intro:closed"));
+        }, instant ? 0 : 600);
+      }
+      document.addEventListener(
+        "click",
+        function (e) {
+          if (e.target && e.target.closest && e.target.closest("#intro")) close(e);
+        },
+        true,
+      );
+      window.addEventListener(
+        "keydown",
+        function (e) {
+          if (!d.classList.contains("intro-open") || e.ctrlKey || e.metaKey || e.altKey) return;
+          if (e.key === "Enter" || e.key === " " || e.key === "Escape") close(e);
+        },
+        true,
+      );
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", lock);
+      else lock();
+    })();
+  </script>
+  <script is:inline>
     // Pre-hydration bridge for Omarchy Mode: an open requested before the islands are live
     // (hint click on a not-yet-hydrated navbar, or Ctrl/Cmd+K before the loader) is queued
     // as a pending flag that OmarchyLoader consumes on mount.
     (function () {
       var K = "__omarchyPending";
       function key(e) {
+        // Never while the intro gate is up.
+        if (document.documentElement.classList.contains("intro-open")) return;
         if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === "k" || e.key === "K")) {
           e.preventDefault();
           window[K] = true;
@@ -41,6 +125,7 @@ import OmarchyLoader from "@/components/omarchy/OmarchyLoader";
       );
     })();
   </script>
+  <IntroGate client:load />
   <Navbar client:load />
   <main>
     <Hero client:load />

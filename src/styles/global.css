@@ -246,3 +246,58 @@
     transition: none !important;
   }
 }
+
+/* ── Intro gate (ENTER screen). Shown/skipped/dismissed by the inline script in index.astro. ── */
+[data-intro-copy="es"],
+html[data-intro-lang="es"] [data-intro-copy="en"] {
+  display: none;
+}
+html[data-intro-lang="es"] [data-intro-copy="es"] {
+  display: inline;
+}
+/* Skipped (session flag, ?nointro, deep link) — or, without JavaScript, any :target (#home after ENTER). */
+html.intro-skip #intro,
+html:has(:target) #intro {
+  display: none;
+}
+html.intro-open {
+  overflow: hidden;
+}
+#intro {
+  transition: opacity 0.6s ease;
+}
+html.intro-leaving #intro {
+  opacity: 0;
+  pointer-events: none;
+}
+/* The heading that receives focus after ENTER is a programmatic target, not a control. */
+#hero-title:focus {
+  outline: none;
+}
+@keyframes intro-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+}
+.intro-rise {
+  animation: intro-rise 1.2s ease-out 0.9s both;
+}
+.intro-enter > span {
+  animation: intro-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes intro-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #intro,
+  .intro-enter {
+    transition: none !important;
+  }
+  .intro-rise,
+  .intro-enter > span {
+    animation: none !important;
+  }
+}

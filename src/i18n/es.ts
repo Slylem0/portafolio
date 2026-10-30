@@ -192,4 +192,10 @@ export const es: Dict = {
     pending: "PENDIENTE",
     linkOk: "ENLACE ACTIVO — AWS BEDROCK",
   },
+  intro: {
+    label: "Intro",
+    enter: "ENTRAR",
+    tagline: "PABLO NICOLÁS MARÍN · CLOUD & BACKEND BUILDER",
+    hint: "clic · enter · esc",
+  },
 };

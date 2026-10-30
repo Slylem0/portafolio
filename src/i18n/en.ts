@@ -190,4 +190,10 @@ export const en = {
     pending: "PENDING",
     linkOk: "LINK ACTIVE — AWS BEDROCK",
   },
+  intro: {
+    label: "Intro",
+    enter: "ENTER",
+    tagline: "PABLO NICOLÁS MARÍN · CLOUD & BACKEND BUILDER",
+    hint: "click · enter · esc",
+  },
 };

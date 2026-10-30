@@ -32,3 +32,8 @@ export function takePendingOpen(): boolean {
   host()[PENDING_KEY] = false;
   return pending;
 }
+
+/** True while the intro gate (ENTER screen) is covering the page; Omarchy Mode must not open then. */
+export function isIntroOpen(): boolean {
+  return typeof document !== "undefined" && document.documentElement.classList.contains("intro-open");
+}

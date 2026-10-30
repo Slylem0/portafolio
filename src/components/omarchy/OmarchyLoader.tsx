@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ComponentType } from "react";
 import { useLang } from "@/i18n";
-import { onOmarchyOpen, takePendingOpen } from "./events";
+import { isIntroOpen, onOmarchyOpen, takePendingOpen } from "./events";
 import { keyToAction } from "./shortcuts";
 
 type ModeProps = { onExit(): void };
@@ -47,7 +47,7 @@ export default function OmarchyLoader() {
     cancelRef.current = () => cancel(false);
     const activate = () => {
       superArmed = false;
-      if (openRef.current) return;
+      if (openRef.current || isIntroOpen()) return;
       openRef.current = true;
       setOpen(true);
       setFailed(false);
