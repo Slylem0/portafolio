@@ -1,7 +1,7 @@
 import { useLang } from "@/i18n";
 import { log, nextMissions } from "@/data/log";
 import { HudRule } from "@/components/ui/HudFrame";
-import { cn } from "@/lib/utils";
+import { cn, monoGlyphs } from "@/lib/utils";
 
 /** Vertical timeline with hexagon nodes, newest first. */
 export default function MissionLog() {
@@ -13,27 +13,27 @@ export default function MissionLog() {
         <HudRule index="004" label={t.log.subtitle} className="mb-8" />
         <h2
           id="log-title"
-          className="mb-8 font-eva text-4xl leading-none font-extrabold tracking-[-0.01em] text-bone sm:text-5xl md:text-6xl"
+          className="mb-8 font-sans text-4xl leading-none font-bold tracking-[-0.04em] text-bone sm:text-5xl md:text-6xl"
         >
           {t.log.title}
         </h2>
         <div aria-hidden="true" className="hex-divider mb-12" />
 
         {/* Goals ahead of the timeline: dashed, never styled as achievements */}
-        <div className="mb-12 border border-dashed border-amber/50 p-4 sm:p-6">
-          <h3 className="mb-4 font-mono text-xs tracking-[0.3em] text-amber">{t.log.next}</h3>
+        <div className="mb-12 border border-dashed border-bone/35 p-4 sm:p-6">
+          <h3 className="mb-4 font-mono text-xs tracking-[0.3em] text-bone">{t.log.next}</h3>
           <ul aria-label={t.log.next} className="grid gap-3 sm:grid-cols-2">
             {nextMissions.map((m) => (
               <li
                 key={m.title.en}
-                className="flex min-w-0 items-start gap-3 border border-bone/15 bg-panel/60 px-3 py-3"
+                className="flex min-w-0 items-start gap-3 border border-bone/15 bg-panel px-3 py-3"
               >
-                <span aria-hidden="true" className="hex mt-0.5 grid size-5 shrink-0 place-items-center bg-amber/70">
+                <span aria-hidden="true" className="hex mt-0.5 grid size-5 shrink-0 place-items-center bg-g-500">
                   <span className="hex size-3.5 bg-bg" />
                 </span>
                 <div className="min-w-0">
-                  <p className="font-mono text-sm leading-snug font-bold text-bone">{m.title[lang]}</p>
-                  <p className="mt-1 font-mono text-[11px] tracking-[0.2em] text-amber">
+                  <p className="font-sans text-sm leading-snug font-semibold text-bone">{m.title[lang]}</p>
+                  <p className="mt-1 font-mono text-[11px] tracking-[0.2em] text-g-300">
                     {t.log.queued} · {m.status[lang]}
                   </p>
                 </div>
@@ -46,7 +46,7 @@ export default function MissionLog() {
           {/* Spine: sits under the node column */}
           <span
             aria-hidden="true"
-            className="absolute top-2 bottom-2 left-[13px] w-px bg-gradient-to-b from-alert via-unit to-unit/20 md:left-[calc(8rem+13px)]"
+            className="absolute top-2 bottom-2 left-[13px] w-px bg-gradient-to-b from-bone via-bone/35 to-bone/10 md:left-[calc(8rem+13px)]"
           />
           <ol className="relative">
             {log.map((entry, i) => {
@@ -58,7 +58,7 @@ export default function MissionLog() {
                 >
                   <time
                     dateTime={entry.date}
-                    className="col-start-2 row-start-1 font-mono text-xs tracking-[0.25em] text-phosphor md:col-start-1 md:pt-1 md:text-right"
+                    className="col-start-2 row-start-1 font-mono text-xs tracking-[0.25em] text-g-300 md:col-start-1 md:pt-1 md:text-right"
                   >
                     {entry.date}
                   </time>
@@ -68,21 +68,20 @@ export default function MissionLog() {
                     aria-hidden="true"
                     className={cn(
                       "hex relative col-start-1 row-span-2 row-start-1 mt-0.5 grid size-7 place-items-center md:col-start-2",
-                      latest ? "bg-alert" : "bg-unit",
+                      latest ? "bg-bone" : "bg-g-500",
                     )}
                   >
-                    <span className="hex grid size-5 place-items-center bg-bg">
-                      <span
-                        className={cn("hex size-2.5", latest ? "bg-alert motion-safe:animate-pulse" : "bg-unit-soft")}
-                      />
+                    {/* Latest: solid white hex with a black core. Older: grey ring, grey core. */}
+                    <span className={cn("hex grid size-5 place-items-center", latest ? "bg-bone" : "bg-bg")}>
+                      <span className={cn("hex size-2.5", latest ? "bg-bg motion-safe:animate-pulse" : "bg-g-500")} />
                     </span>
                   </span>
 
                   <div className="col-start-2 row-start-2 min-w-0 md:col-start-3 md:row-start-1">
-                    <h3 className="mt-1 font-mono text-sm font-bold leading-snug text-bone md:mt-0 md:text-base">
+                    <h3 className="mt-1 font-sans text-base leading-snug font-semibold tracking-[-0.01em] text-bone md:mt-0 md:text-lg">
                       {entry.title[lang]}
                     </h3>
-                    <p className="mt-1.5 font-mono text-[13px] leading-relaxed text-bone/75">{entry.detail[lang]}</p>
+                    <p className="mt-1.5 font-sans text-sm leading-relaxed text-g-300">{monoGlyphs(entry.detail[lang])}</p>
                   </div>
                 </li>
               );

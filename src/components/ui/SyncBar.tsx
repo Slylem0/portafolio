@@ -1,28 +1,12 @@
 import { cn } from "@/lib/utils";
 import { useReveal } from "@/lib/useReveal";
 
-export type SyncColor = "phosphor" | "alert" | "unit" | "amber";
-
 const SEGMENTS = 20;
-
-const FILL: Record<SyncColor, string> = {
-  phosphor: "bg-phosphor",
-  alert: "bg-alert",
-  unit: "bg-unit",
-  amber: "bg-amber",
-};
-const TEXT: Record<SyncColor, string> = {
-  phosphor: "text-phosphor",
-  alert: "text-alert",
-  unit: "text-unit-soft",
-  amber: "text-amber",
-};
 
 interface SyncBarProps {
   name: string;
   /** 0–100 */
   sync: number;
-  color?: SyncColor;
   /** Optional short tag shown next to the name (e.g. "learning"). */
   tag?: string;
   /** Accessible name; defaults to `name`. */
@@ -31,7 +15,7 @@ interface SyncBarProps {
 }
 
 /** Segmented sync-ratio meter. Rendered filled on the server; animates in on reveal when motion is allowed. */
-export default function SyncBar({ name, sync, color = "phosphor", tag, label, className }: SyncBarProps) {
+export default function SyncBar({ name, sync, tag, label, className }: SyncBarProps) {
   const [ref, state] = useReveal<HTMLDivElement>(0.4);
   const value = Math.max(0, Math.min(100, Math.round(sync)));
   const lit = Math.round((value / 100) * SEGMENTS);
@@ -52,10 +36,10 @@ export default function SyncBar({ name, sync, color = "phosphor", tag, label, cl
         <span className="flex min-w-0 items-baseline gap-2 text-bone/90">
           <span className="truncate">{name}</span>
           {tag && (
-            <span className="shrink-0 border border-amber/60 px-1 text-[9px] tracking-widest text-amber uppercase">{tag}</span>
+            <span className="shrink-0 border border-dashed border-bone/50 px-1 text-[9px] tracking-widest text-bone/80 uppercase">{tag}</span>
           )}
         </span>
-        <span className={cn("shrink-0 tabular-nums tracking-wider", TEXT[color])}>
+        <span className="shrink-0 font-medium tabular-nums tracking-wider text-bone">
           {value}
           <span className="text-bone/50">%</span>
         </span>
@@ -66,9 +50,7 @@ export default function SyncBar({ name, sync, color = "phosphor", tag, label, cl
             key={i}
             className={cn(
               "sync-seg flex-1",
-              i < shown ? FILL[color] : "bg-bone/10",
-              // Danger zone: the last quarter of the scale is marked like a NERV readout.
-              i >= SEGMENTS * 0.75 && i >= shown && "bg-alert/15",
+              i < shown ? "bg-bone" : "bg-bone/12",
             )}
             style={state === "revealed" ? { transitionDelay: `${i * 35}ms` } : undefined}
           />

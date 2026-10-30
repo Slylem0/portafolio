@@ -6,11 +6,12 @@ import { HintLabel, useCoarsePointer } from "@/components/ui/OmarchyHint";
 import { openOmarchy } from "@/components/omarchy/events";
 
 // Deterministic decoration (no Math.random in render: avoids hydration mismatches).
-const DOTS = Array.from({ length: 40 }, (_, i) => (i % 9 === 4 ? "alert" : i % 7 === 2 ? "phosphor" : "bone"));
+// 40-dot row: mostly dim, a few lit, like the hero-ascii status dots.
+const DOTS = Array.from({ length: 40 }, (_, i) => (i % 9 === 4 ? "lit" : i % 7 === 2 ? "mid" : "dim"));
 const BARS = [40, 75, 55, 95, 35, 80, 60, 45];
 
 const focusRing =
-  "outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-phosphor";
+  "outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bone";
 
 function HudButton({ href, children, primary }: { href: string; children: string; primary?: boolean }) {
   return (
@@ -19,8 +20,8 @@ function HudButton({ href, children, primary }: { href: string; children: string
       className={cn(
         "group relative inline-flex h-11 items-center justify-center border px-5 font-mono text-xs font-bold tracking-[0.2em] transition-colors duration-150",
         primary
-          ? "border-alert text-alert hover:bg-alert hover:text-bg"
-          : "border-bone/60 text-bone hover:bg-bone hover:text-bg",
+          ? "border-bone bg-bone text-bg hover:bg-transparent hover:text-bone"
+          : "border-bone/45 text-bone hover:border-bone hover:bg-bone hover:text-bg",
         focusRing,
       )}
     >
@@ -31,7 +32,7 @@ function HudButton({ href, children, primary }: { href: string; children: string
             aria-hidden="true"
             className={cn(
               "absolute size-2 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100",
-              primary ? "border-alert" : "border-bone",
+              "border-bone",
               pos,
             )}
           />
@@ -72,29 +73,29 @@ export default function Hero() {
 
       {/* Coordinates (top-right) */}
       <div className="relative z-10 flex justify-between px-7 pt-6 font-mono text-[10px] tracking-widest text-bone/70 md:justify-end md:gap-6 md:px-12 md:pt-10">
-        <span className="hidden text-unit-soft md:inline">{t.hero.base}</span>
-        <span className="text-phosphor">{t.hero.coords}</span>
+        <span className="hidden text-g-300 md:inline">{t.hero.base}</span>
+        <span className="text-bone">{t.hero.coords}</span>
       </div>
 
       {/* Title block */}
       <div className="relative z-10 flex flex-1 items-end px-7 pb-[calc(5vh+2.5rem)] pt-6 md:items-center md:px-12 md:pb-[calc(5vh+3rem)] lg:pl-[10%]">
         <div className="relative w-full max-w-lg lg:max-w-xl">
           {/* Dither strip (desktop) */}
-          <div aria-hidden="true" className="dither absolute -left-6 top-10 bottom-10 hidden w-1 opacity-40 lg:block" />
+          <div aria-hidden="true" className="dither-pattern absolute -left-6 top-10 bottom-10 hidden w-1 lg:block" />
 
           <HudRule index="001" className="mb-6" />
 
           <h1
             id="hero-title"
-            className="font-mono text-[2.1rem] font-bold leading-[1.05] tracking-[0.1em] text-bone sm:text-5xl 2xl:text-6xl"
+            className="font-sans text-[2.35rem] leading-[0.95] font-bold tracking-[-0.045em] text-bone sm:text-6xl 2xl:text-7xl"
           >
             <span className="block">{first}</span>{" "}
-            <span className="block text-alert">{last}</span>
+            <span className="block text-g-300">{last}</span>
           </h1>
 
-          <p className="mt-4 font-mono text-sm tracking-wider text-bone/60 md:text-base">
-            <span aria-hidden="true" className="text-unit">{"// "}</span>
-            <span data-testid="hero-role" className="text-phosphor">{t.hero.role}</span>
+          <p className="mt-4 font-mono text-sm tracking-wider text-g-300 md:text-base">
+            <span aria-hidden="true" className="text-g-300">{"// "}</span>
+            <span data-testid="hero-role" className="text-bone">{t.hero.role}</span>
           </p>
 
           <div aria-hidden="true" className="mt-6 flex max-w-full flex-wrap gap-[5px] overflow-hidden md:gap-1.5">
@@ -103,14 +104,14 @@ export default function Hero() {
                 key={i}
                 className={cn(
                   "size-[3px]",
-                  c === "alert" ? "bg-alert" : c === "phosphor" ? "bg-phosphor" : "bg-bone/35",
+                  c === "lit" ? "bg-bone" : c === "mid" ? "bg-bone/60" : "bg-bone/25",
                   i >= 32 && "hidden sm:block",
                 )}
               />
             ))}
           </div>
 
-          <p className="mt-6 max-w-md font-mono text-xs leading-relaxed text-bone/80 md:text-sm">{t.hero.description}</p>
+          <p className="mt-6 max-w-md font-sans text-sm leading-relaxed text-g-300 md:text-base">{t.hero.description}</p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
             <HudButton href="#sessions" primary>
@@ -125,7 +126,7 @@ export default function Hero() {
             data-omarchy-hint=""
             onClick={openOmarchy}
             className={cn(
-              "mt-4 inline-flex min-h-8 items-center gap-2 font-mono text-[10px] font-bold tracking-widest text-alert/90 transition-colors hover:text-alert md:text-[11px]",
+              "mt-4 inline-flex min-h-8 items-center gap-2 border-b border-dashed border-bone/40 font-mono text-[10px] font-bold tracking-widest text-bone/85 transition-colors hover:border-bone hover:text-bone md:text-[11px]",
               focusRing,
             )}
           >
@@ -133,7 +134,7 @@ export default function Hero() {
           </button>
 
           <div aria-hidden="true" className="mt-8 hidden items-center gap-3 font-mono text-[10px] tracking-widest text-bone/50 sm:flex">
-            <span className="text-base leading-none text-unit">∞</span>
+            <span className="text-base leading-none text-bone">∞</span>
             <span className="h-px w-16 bg-bone/30" />
             <span>{t.hero.notation}</span>
           </div>
@@ -143,23 +144,23 @@ export default function Hero() {
       {/* Status bar */}
       <div className="absolute inset-x-0 bottom-0 z-10 flex h-[5vh] min-h-9 items-center justify-between border-t border-bone/20 bg-bg/60 px-4 font-mono text-[9px] tracking-widest text-bone/70 backdrop-blur-md md:px-8 md:text-[10px]">
         <div className="flex items-center gap-3 md:gap-4">
-          <span className="flex items-center gap-1.5 text-phosphor">
-            <span aria-hidden="true" className="size-1.5 bg-phosphor" />
+          <span className="flex items-center gap-1.5 text-bone">
+            <span aria-hidden="true" className="size-1.5 bg-bone" />
             {t.hero.systemActive}
           </span>
           <span aria-hidden="true" className="hidden h-3 items-end gap-[2px] sm:flex">
             {BARS.map((h, i) => (
-              <span key={i} className={cn("w-[3px]", i === 3 ? "bg-alert" : "bg-bone/50")} style={{ height: `${h}%` }} />
+              <span key={i} className={cn("w-[3px]", i === 3 ? "bg-bone" : "bg-bone/40")} style={{ height: `${h}%` }} />
             ))}
           </span>
-          <span className="hidden text-alert sm:inline">{t.hero.sync}</span>
+          <span className="hidden text-bone sm:inline">{t.hero.sync}</span>
           <span>{t.hero.version}</span>
         </div>
         <div className="flex items-center gap-2" aria-hidden="true">
           {[0, 1, 2].map((i) => (
             <span
               key={i}
-              className="size-1 rounded-full bg-phosphor motion-safe:animate-pulse"
+              className="size-1 rounded-full bg-bone motion-safe:animate-pulse"
               style={{ animationDelay: `${i * 0.2}s` }}
             />
           ))}

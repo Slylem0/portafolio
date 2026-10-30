@@ -16,12 +16,11 @@ export default function AsciiOctahedron({ variant = "hero", className = "" }: Pr
     if (!canvas || !parent || !ctx) return;
 
     const css = getComputedStyle(document.documentElement);
-    const phosphor = css.getPropertyValue("--phosphor").trim() || "#39ff88";
-    const alert = css.getPropertyValue("--alert").trim() || "#ff6a00";
-    const unit = css.getPropertyValue("--unit").trim() || "#7b4dff";
+    const ink = css.getPropertyValue("--bone").trim() || "#f5f5f5";
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const speed = reduced ? 0.2 : 1;
-    // Shading bands: dim (' .:-=') in unit purple, mid and edges ('+*#') in phosphor, highlights ('%@') in alert.
+    // Monochrome shading: one white ink, brightness from the glyph plus alpha per band.
+    // Dim (' .:-=') faint grey, mid and edges ('+*#') light grey, highlights ('%@') pure white.
     const brightMin = RAMP.length - 2;
     const midMin = 5;
     const band = (ch: string) => {
@@ -29,9 +28,9 @@ export default function AsciiOctahedron({ variant = "hero", className = "" }: Pr
       return i >= brightMin ? 2 : i >= midMin ? 1 : 0;
     };
     const STYLE = [
-      { color: unit, alpha: 0.9 },
-      { color: phosphor, alpha: 0.8 },
-      { color: alert, alpha: 1 },
+      { color: ink, alpha: 0.38 },
+      { color: ink, alpha: 0.72 },
+      { color: ink, alpha: 1 },
     ];
 
     let width = 0, height = 0, dpr = 1, cellW = 10, cellH = 20;
@@ -54,7 +53,7 @@ export default function AsciiOctahedron({ variant = "hero", className = "" }: Pr
       cellW = variant === "wallpaper" ? 8 : window.innerWidth < 768 ? 7 : 10;
       cellH = cellW * 2;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.font = `${cellW * 1.6}px "JetBrains Mono", monospace`;
+      ctx.font = `${cellW * 1.6}px "Geist Mono", monospace`;
       ctx.textBaseline = "top";
       ctx.textAlign = "left";
     };
@@ -74,7 +73,7 @@ export default function AsciiOctahedron({ variant = "hero", className = "" }: Pr
       ctx.clearRect(0, 0, width, height);
       const offX = (width - cols * cellW) / 2;
       const offY = (height - rows * cellH) / 2;
-      // One pass per colour band keeps fillStyle switches to three per frame.
+      // One pass per band keeps style switches to three per frame.
       for (let b = 0; b < STYLE.length; b++) {
         ctx.globalAlpha = STYLE[b].alpha;
         ctx.fillStyle = STYLE[b].color;
@@ -131,11 +130,11 @@ export default function AsciiOctahedron({ variant = "hero", className = "" }: Pr
     resize();
     draw(0);
     start();
-    // Re-measure once the webfont is loaded so glyphs use JetBrains Mono.
+    // Re-measure once the webfont is loaded so glyphs use Geist Mono.
     const redraw = () => { if (!cancelled) { resize(); draw(0); } };
     const fonts = document.fonts;
     if (fonts) {
-      (typeof fonts.load === "function" ? fonts.load('16px "JetBrains Mono"') : fonts.ready)
+      (typeof fonts.load === "function" ? fonts.load('16px "Geist Mono"') : fonts.ready)
         .then(redraw, redraw);
     }
 

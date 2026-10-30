@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-/** Four-square Super/Windows key glyph (JetBrains Mono has no "⊞"). */
+/** Four-square Super/Windows key glyph (drawn as SVG so it does not depend on font coverage of "⊞"). */
 function SuperKey() {
   return (
     <svg aria-hidden="true" viewBox="0 0 12 12" className="inline-block size-[1.1em] shrink-0 align-[-0.15em]">

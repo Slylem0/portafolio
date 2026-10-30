@@ -6,7 +6,7 @@ import { SECTIONS as ITEMS } from "@/data/sections";
 import { HintLabel, useCoarsePointer } from "@/components/ui/OmarchyHint";
 
 const focusRing =
-  "outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-phosphor";
+  "outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bone";
 
 export default function Navbar() {
   const { lang, t, setLang } = useLang();
@@ -55,7 +55,7 @@ export default function Navbar() {
               <a
                 href={`#${id}`}
                 className={cn(
-                  "block px-1.5 py-1 font-mono text-[10px] tracking-widest whitespace-nowrap text-bone/75 transition-colors hover:text-phosphor lg:px-2 lg:text-[11px]",
+                  "block px-1.5 py-1 font-mono text-[10px] tracking-widest whitespace-nowrap text-bone/75 transition-colors hover:text-bone lg:px-2 lg:text-[11px]",
                   focusRing,
                 )}
               >
@@ -69,7 +69,7 @@ export default function Navbar() {
           type="button"
           onClick={toggleLang}
           className={cn(
-            "hidden shrink-0 border border-bone/30 px-2 py-1 font-mono text-[10px] tracking-widest text-bone transition-colors hover:border-phosphor hover:text-phosphor md:block lg:text-[11px]",
+            "hidden shrink-0 border border-bone/30 px-2 py-1 font-mono text-[10px] tracking-widest text-bone transition-colors hover:border-bone hover:bg-bone hover:text-bg md:block lg:text-[11px]",
             focusRing,
           )}
         >
@@ -96,14 +96,14 @@ export default function Navbar() {
         </button>
 
         {/* Omarchy hint: inline on desktop, full-width warning strip below lg */}
-        <div className="order-last -mx-4 w-[calc(100%+2rem)] border-t border-alert/40 lg:order-none lg:mx-0 lg:w-auto lg:border-0">
+        <div className="order-last -mx-4 w-[calc(100%+2rem)] border-t border-bone/20 lg:order-none lg:mx-0 lg:w-auto lg:border-0">
           <button
             type="button"
             data-testid="omarchy-hint"
             data-omarchy-hint=""
             onClick={openOmarchy}
             className={cn(
-              "hint-blink group relative flex h-8 w-full items-center justify-center gap-2 px-3 font-mono text-[10px] font-bold tracking-widest whitespace-nowrap text-alert transition-colors hover:bg-alert hover:text-bg lg:w-auto lg:border lg:border-alert/70 lg:text-[11px]",
+              "hint-blink group relative flex h-8 w-full items-center justify-center gap-2 px-3 font-mono text-[10px] font-bold tracking-widest whitespace-nowrap text-bone transition-colors hover:bg-bone hover:text-bg lg:w-auto lg:border lg:border-dashed lg:border-bone/60 lg:text-[11px]",
               focusRing,
             )}
           >
@@ -126,7 +126,7 @@ export default function Navbar() {
                 href={`#${id}`}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  "flex items-center justify-between py-3 font-mono text-xs tracking-widest text-bone/85 hover:text-phosphor",
+                  "flex items-center justify-between py-3 font-mono text-xs tracking-widest text-bone/85 hover:text-bone",
                   focusRing,
                 )}
               >
@@ -140,7 +140,7 @@ export default function Navbar() {
           type="button"
           onClick={toggleLang}
           className={cn(
-            "mt-4 w-full border border-bone/30 py-2.5 font-mono text-xs tracking-widest text-bone hover:border-phosphor hover:text-phosphor",
+            "mt-4 w-full border border-bone/30 py-2.5 font-mono text-xs tracking-widest text-bone hover:border-bone hover:bg-bone hover:text-bg",
             focusRing,
           )}
         >

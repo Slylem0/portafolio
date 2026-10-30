@@ -14,7 +14,7 @@ interface TitleCardProps {
 }
 
 /**
- * Full-bleed black episode title card: huge white serif, stacked words, thin rules.
+ * Full-bleed black episode title card: huge white Geist, stacked words, thin rules.
  * Text is always rendered (SSR, no-JS safe); when JS runs and motion is allowed,
  * entering the viewport triggers a one-shot smash cut (inverted frame + jolt).
  */
@@ -22,8 +22,8 @@ export default function TitleCard({ episode, title, total, id, className }: Titl
   const [ref, state] = useReveal<HTMLDivElement>(0.35);
   const words = title.split(/\s+/).filter(Boolean);
   const longest = Math.max(...words.map((w) => w.length), 4);
-  // Fit the longest word to the viewport (Shippori Mincho caps ≈ 0.8em wide), capped on desktop.
-  const fontSize = `min(8.5rem, ${(76 / longest / 0.8).toFixed(2)}vw)`;
+  // Fit the longest word to the viewport (Geist Bold caps ≈ 0.72em wide), capped on desktop.
+  const fontSize = `min(8rem, ${(76 / longest / 0.72).toFixed(2)}vw)`;
 
   return (
     <div
@@ -38,14 +38,14 @@ export default function TitleCard({ episode, title, total, id, className }: Titl
           <span className="h-px w-2/3 bg-white/40" />
         </div>
 
-        <h2 id={id} className="font-eva text-white">
-          <span className="block text-sm font-bold tracking-[0.35em] text-white/85 md:text-lg">{episode}</span>
+        <h2 id={id} className="font-sans text-white">
+          <span className="block font-mono text-xs font-medium tracking-[0.35em] text-white/75 md:text-sm">{episode}</span>
           <span className="sr-only">: </span>
-          <span className="mt-4 block font-extrabold leading-[0.92] tracking-[-0.02em] md:mt-6" style={{ fontSize }}>
+          <span className="mt-4 block leading-[0.9] font-bold tracking-[-0.045em] md:mt-6" style={{ fontSize }}>
             {words.map((w, i) => (
               <span
                 key={`${w}-${i}`}
-                className={cn("block origin-left scale-x-[0.86] whitespace-nowrap", i % 2 === 1 && "pl-[0.35em]")}
+                className={cn("block whitespace-nowrap", i === words.length - 1 && words.length > 1 && "text-white/50")}
               >
                 {w}
                 {i < words.length - 1 && <span className="sr-only"> </span>}
@@ -58,7 +58,7 @@ export default function TitleCard({ episode, title, total, id, className }: Titl
         <div aria-hidden="true" className="mt-8 flex items-center gap-3 md:mt-12">
           <span className="h-px flex-1 bg-white/60" />
           <span className="font-mono text-[10px] tracking-[0.3em] text-white/60">{episode.replace(/\D+/g, "") || "01"} / {String(total).padStart(2, "0")}</span>
-          <span className="h-px w-10 bg-alert" />
+          <span className="h-[3px] w-10 bg-white" />
         </div>
       </div>
     </div>
