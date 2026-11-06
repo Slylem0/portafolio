@@ -59,8 +59,10 @@ export default function AsciiOctahedron({ variant = "hero", className = "" }: Pr
     };
 
     const draw = (dt: number) => {
-      ry += dt * 0.35 * speed;
-      rx += dt * 0.12 * speed;
+      // Hero: spin up to 4× faster as the visitor scrolls through the first screen.
+      const boost = variant === "hero" && !reduced ? 1 + Math.min(3, (window.scrollY / Math.max(1, window.innerHeight)) * 3) : 1;
+      ry += dt * 0.35 * speed * boost;
+      rx += dt * 0.12 * speed * boost;
       px += (tx - px) * Math.min(1, dt * 4);
       py += (ty - py) * Math.min(1, dt * 4);
 

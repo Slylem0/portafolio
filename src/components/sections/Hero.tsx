@@ -4,6 +4,11 @@ import AsciiOctahedron from "@/components/ascii/AsciiOctahedron";
 import HudFrame, { HudRule } from "@/components/ui/HudFrame";
 import { HintLabel, useCoarsePointer } from "@/components/ui/OmarchyHint";
 import { openOmarchy } from "@/components/omarchy/events";
+import { useRef } from "react";
+import ScrambleText from "@/components/fx/ScrambleText";
+import MagneticButton from "@/components/fx/MagneticButton";
+import { gsap } from "@/lib/motion/gsap";
+import { useScrollFx } from "@/lib/motion/useScrollFx";
 
 // Deterministic decoration (no Math.random in render: avoids hydration mismatches).
 // 40-dot row: mostly dim, a few lit, like the hero-ascii status dots.
@@ -49,9 +54,24 @@ export default function Hero() {
   const words = t.hero.title.split(" ");
   const first = words.slice(0, -1).join(" ");
   const last = words[words.length - 1];
+  const section = useRef<HTMLElement>(null);
+
+  // Scrolling out: the title block sinks back and dims as About comes in.
+  useScrollFx(section, ({ el }) => {
+    const block = el.querySelector<HTMLElement>("[data-fx=hero-block]");
+    if (!block) return;
+    gsap.to(block, {
+      scale: 0.92,
+      opacity: 0.2,
+      y: -60,
+      ease: "none",
+      scrollTrigger: { trigger: el, start: "top top", end: "bottom top", scrub: true },
+    });
+  });
 
   return (
     <section
+      ref={section}
       id="home"
       aria-labelledby="hero-title"
       className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-bg pt-20 lg:pt-14"
@@ -79,7 +99,7 @@ export default function Hero() {
 
       {/* Title block */}
       <div className="relative z-10 flex flex-1 items-end px-7 pb-[calc(5vh+2.5rem)] pt-6 md:items-center md:px-12 md:pb-[calc(5vh+3rem)] lg:pl-[10%]">
-        <div className="relative w-full max-w-lg lg:max-w-xl">
+        <div data-fx="hero-block" className="relative w-full max-w-lg origin-left lg:max-w-xl">
           {/* Dither strip (desktop) */}
           <div aria-hidden="true" className="dither-pattern absolute -left-6 top-10 bottom-10 hidden w-1 lg:block" />
 
@@ -89,8 +109,8 @@ export default function Hero() {
             id="hero-title"
             className="font-sans text-[2.35rem] leading-[0.95] font-bold tracking-[-0.045em] text-bone sm:text-6xl 2xl:text-7xl"
           >
-            <span className="block">{first}</span>{" "}
-            <span className="block text-g-300">{last}</span>
+            <ScrambleText text={first} className="block" />{" "}
+            <ScrambleText text={last} delayMs={250} className="block text-g-300" />
           </h1>
 
           <p className="mt-4 font-mono text-sm tracking-wider text-g-300 md:text-base">
@@ -114,10 +134,14 @@ export default function Hero() {
           <p className="mt-6 max-w-md font-sans text-sm leading-relaxed text-g-300 md:text-base">{t.hero.description}</p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
-            <HudButton href="#sessions" primary>
-              {t.hero.viewSessions}
-            </HudButton>
-            <HudButton href="#footer">{t.hero.contact}</HudButton>
+            <MagneticButton>
+              <HudButton href="#sessions" primary>
+                {t.hero.viewSessions}
+              </HudButton>
+            </MagneticButton>
+            <MagneticButton>
+              <HudButton href="#footer">{t.hero.contact}</HudButton>
+            </MagneticButton>
           </div>
 
           <button

@@ -36,14 +36,22 @@ export function initSmoothScroll(): void {
 
   // A refresh moves the native scroll (pin spacers, restored position): Lenis must adopt it,
   // and a deep link (#sessions) keeps its target until the visitor scrolls on their own.
-  let touched = false;
-  const touch = () => (touched = true);
-  for (const ev of ["wheel", "touchstart", "keydown", "pointerdown"]) {
-    window.addEventListener(ev, touch, { once: true, passive: true });
-  }
+  // `anchor` is the section the page is heading to (URL hash on load, or an in-page link click)
+  // until the visitor scrolls by hand; a refresh re-aims at it because pins move its position.
+  const byHash = (hash: string) => (hash.length > 1 ? document.getElementById(decodeURIComponent(hash.slice(1))) : null);
+  let anchor: HTMLElement | null = byHash(location.hash);
+  const release = () => (anchor = null);
+  for (const ev of ["wheel", "touchstart", "keydown"]) window.addEventListener(ev, release, { passive: true });
+  document.addEventListener(
+    "click",
+    (e) => {
+      const a = (e.target as Element | null)?.closest?.("a[href^='#']");
+      if (a) anchor = byHash(a.getAttribute("href") ?? "");
+    },
+    true,
+  );
   ScrollTrigger.addEventListener("refresh", () => {
-    const target = !touched && location.hash.length > 1 ? document.getElementById(location.hash.slice(1)) : null;
-    if (target) l.scrollTo(target, { immediate: true, force: true });
+    if (anchor) l.scrollTo(anchor, { immediate: !l.isScrolling, force: true });
     else l.scrollTo(window.scrollY, { immediate: true, force: true });
   });
 

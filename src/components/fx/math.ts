@@ -26,3 +26,25 @@ export function magnet(rect: Rect, x: number, y: number, strength: number, radiu
   if (Math.hypot(dx, dy) > radius) return { dx: 0, dy: 0 };
   return { dx: dx * strength, dy: dy * strength };
 }
+
+export const SCRAMBLE_GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*+=/<>";
+
+/**
+ * One frame of a text "decode": characters left of `progress × length` are final, the rest are
+ * random glyphs; spaces never change so the words keep their shape.
+ */
+export function scrambleFrame(target: string, progress: number, rand: () => number, glyphs = SCRAMBLE_GLYPHS): string {
+  if (progress >= 1) return target;
+  const settled = Math.floor(Math.max(0, progress) * target.length);
+  let out = "";
+  for (let i = 0; i < target.length; i++) {
+    const ch = target[i];
+    if (i < settled || ch === " ") out += ch;
+    else {
+      let g = glyphs[Math.floor(rand() * glyphs.length) % glyphs.length];
+      if (g === ch) g = glyphs[(glyphs.indexOf(g) + 1) % glyphs.length];
+      out += g;
+    }
+  }
+  return out;
+}

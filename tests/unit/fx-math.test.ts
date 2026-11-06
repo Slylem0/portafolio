@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { magnet, tilt } from "@/components/fx/math";
+import { magnet, scrambleFrame, tilt } from "@/components/fx/math";
 
 const rect = { left: 0, top: 0, width: 200, height: 100 };
 
@@ -29,5 +29,20 @@ describe("magnet", () => {
   });
   it("lets go outside the radius", () => {
     expect(magnet(rect, 300, 50, 0.3, 120)).toEqual({ dx: 0, dy: 0 });
+  });
+});
+
+describe("scrambleFrame", () => {
+  it("keeps length and spaces from the start", () => {
+    const f = scrambleFrame("AB CD", 0, () => 0);
+    expect(f).toHaveLength(5);
+    expect(f[2]).toBe(" ");
+    expect(f).not.toBe("AB CD");
+  });
+  it("settles characters from the left as it progresses", () => {
+    expect(scrambleFrame("AB CD", 0.4, () => 0).slice(0, 2)).toBe("AB");
+  });
+  it("ends on the target", () => {
+    expect(scrambleFrame("AB CD", 1, () => 0.5)).toBe("AB CD");
   });
 });

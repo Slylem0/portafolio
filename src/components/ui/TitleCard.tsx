@@ -48,7 +48,7 @@ export default function TitleCard({
         words.forEach((w, i) => {
           tl.fromTo(
             w,
-            { xPercent: i % 2 ? 18 : -18, opacity: 0.35 },
+            { xPercent: i % 2 ? 10 : -6, opacity: 0.35 },
             { xPercent: 0, opacity: 1, ease: "none" },
             0,
           );

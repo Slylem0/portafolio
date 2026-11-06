@@ -77,14 +77,14 @@ test("about bio words light up", async ({ page, isMobile }) => {
   test.skip(isMobile, "desktop scroll check");
   await page.goto("/");
   await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(500);
   const word = page.getByTestId("about-story").locator("p").first().locator("[data-word]").first();
-  expect(await word.evaluate((n) => getComputedStyle(n).color)).toBe("rgb(64, 64, 64)");
+  const color = () => word.evaluate((n) => getComputedStyle(n).color);
+  // Islands hydrate on idle: wait for the effect to arm instead of a fixed delay.
+  await expect.poll(color, { timeout: 10000 }).toBe("rgb(64, 64, 64)");
   await page.getByTestId("about-story").scrollIntoViewIfNeeded();
   await page.mouse.move(640, 400);
   await page.mouse.wheel(0, 500);
-  await page.waitForTimeout(1500);
-  expect(await word.evaluate((n) => getComputedStyle(n).color)).toBe("rgb(245, 245, 245)");
+  await expect.poll(color, { timeout: 10000 }).toBe("rgb(245, 245, 245)");
 });
 
 test("about story keeps its text for assistive tech", async ({ page }) => {

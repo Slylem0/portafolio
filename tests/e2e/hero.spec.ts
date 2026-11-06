@@ -106,3 +106,10 @@ test("hero octahedron pauses while Omarchy Mode is open and resumes after", asyn
   await expect(page.getByTestId("omarchy")).toHaveCount(0);
   await expect.poll(changes).toBe(true);
 });
+
+test("hero name accessible name is final text", async ({ page }) => {
+  await page.goto("/");
+  const h1 = page.locator("#home").getByRole("heading", { level: 1 });
+  await expect(h1).toHaveAccessibleName(/PABLO NICOLÁS\s+MARÍN/);
+  await expect(page.locator("#home [data-scramble]").first()).toHaveAttribute("aria-hidden", "true");
+});
