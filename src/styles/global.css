@@ -334,3 +334,17 @@ html.intro-leaving #intro {
   background-color: var(--bone);
   transform: scale(1.15);
 }
+
+/* HUD cursor: hide the system cursor on the page while it runs (not inside Omarchy Mode). */
+html.hud-cursor-on body,
+html.hud-cursor-on body a,
+html.hud-cursor-on body button {
+  cursor: none;
+}
+html.hud-cursor-on .om-root,
+html.hud-cursor-on .om-root * {
+  cursor: auto;
+}
+html.hud-cursor-on:has(.om-root) .hud-cursor {
+  display: none;
+}

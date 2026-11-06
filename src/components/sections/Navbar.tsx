@@ -5,6 +5,8 @@ import { openOmarchy } from "@/components/omarchy/events";
 import { SECTIONS as ITEMS } from "@/data/sections";
 import { HintLabel, useCoarsePointer } from "@/components/ui/OmarchyHint";
 import { initSmoothScroll } from "@/lib/motion/lenis";
+import ScrollProgress from "@/components/fx/ScrollProgress";
+import HudCursor from "@/components/fx/HudCursor";
 
 const focusRing =
   "outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bone";
@@ -35,6 +37,8 @@ export default function Navbar() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b border-bone/20 bg-bg/75 backdrop-blur-md">
+      <ScrollProgress />
+      <HudCursor />
       <nav
         aria-label={t.nav.sections}
         className="mx-auto flex flex-wrap items-center gap-x-3 px-4 md:gap-x-4 lg:h-14 lg:flex-nowrap lg:px-8"
@@ -42,14 +46,22 @@ export default function Navbar() {
         {/* Logotype */}
         <a
           href="#home"
-          className={cn("flex h-12 shrink-0 items-center gap-3 lg:h-auto", focusRing)}
+          className={cn(
+            "flex h-12 shrink-0 items-center gap-3 lg:h-auto",
+            focusRing,
+          )}
           onClick={() => setOpen(false)}
         >
           <span className="inline-block -skew-x-12 font-mono text-base font-bold italic tracking-[0.15em] text-bone">
             {t.nav.brand}
           </span>
-          <span aria-hidden="true" className="hidden h-4 w-px bg-bone/40 lg:block" />
-          <span className="hidden font-mono text-[10px] tracking-widest text-bone/60 lg:inline">{t.nav.est}</span>
+          <span
+            aria-hidden="true"
+            className="hidden h-4 w-px bg-bone/40 lg:block"
+          />
+          <span className="hidden font-mono text-[10px] tracking-widest text-bone/60 lg:inline">
+            {t.nav.est}
+          </span>
         </a>
 
         {/* Desktop items */}
@@ -92,9 +104,24 @@ export default function Navbar() {
           )}
         >
           <span aria-hidden="true" className="flex w-3.5 flex-col gap-[3px]">
-            <span className={cn("h-px bg-current transition-transform", open && "translate-y-[4px] rotate-45")} />
-            <span className={cn("h-px bg-current transition-opacity", open && "opacity-0")} />
-            <span className={cn("h-px bg-current transition-transform", open && "-translate-y-[4px] -rotate-45")} />
+            <span
+              className={cn(
+                "h-px bg-current transition-transform",
+                open && "translate-y-[4px] rotate-45",
+              )}
+            />
+            <span
+              className={cn(
+                "h-px bg-current transition-opacity",
+                open && "opacity-0",
+              )}
+            />
+            <span
+              className={cn(
+                "h-px bg-current transition-transform",
+                open && "-translate-y-[4px] -rotate-45",
+              )}
+            />
           </span>
           {open ? t.nav.close : t.nav.menu}
         </button>
@@ -135,7 +162,9 @@ export default function Navbar() {
                 )}
               >
                 {t.nav[id]}
-                <span aria-hidden="true" className="text-bone/30">▸</span>
+                <span aria-hidden="true" className="text-bone/30">
+                  ▸
+                </span>
               </a>
             </li>
           ))}
