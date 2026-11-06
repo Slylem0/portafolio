@@ -59,6 +59,7 @@ export const en = {
   },
   sessions: {
     title: "SESSIONS",
+    drag: "SCROLL ▸",
     subtitle: "WANTED: GOOD PROJECTS, ALIVE",
     session: "SESSION",
     stack: "STACK",

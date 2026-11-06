@@ -61,6 +61,7 @@ export const es: Dict = {
   },
   sessions: {
     title: "SESIONES",
+    drag: "DESLIZA ▸",
     subtitle: "SE BUSCAN: BUENOS PROYECTOS, VIVOS",
     session: "SESIÓN",
     stack: "STACK",

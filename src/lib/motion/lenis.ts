@@ -34,6 +34,19 @@ export function initSmoothScroll(): void {
   gsap.ticker.add((time) => l.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
 
+  // A refresh moves the native scroll (pin spacers, restored position): Lenis must adopt it,
+  // and a deep link (#sessions) keeps its target until the visitor scrolls on their own.
+  let touched = false;
+  const touch = () => (touched = true);
+  for (const ev of ["wheel", "touchstart", "keydown", "pointerdown"]) {
+    window.addEventListener(ev, touch, { once: true, passive: true });
+  }
+  ScrollTrigger.addEventListener("refresh", () => {
+    const target = !touched && location.hash.length > 1 ? document.getElementById(location.hash.slice(1)) : null;
+    if (target) l.scrollTo(target, { immediate: true, force: true });
+    else l.scrollTo(window.scrollY, { immediate: true, force: true });
+  });
+
   const html = document.documentElement;
   const sync = () => (isPageLocked(html) ? l.stop() : l.start());
   new MutationObserver(sync).observe(html, { attributes: true, attributeFilter: ["style", "class"] });
