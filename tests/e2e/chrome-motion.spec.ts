@@ -7,10 +7,11 @@ test("scroll progress reaches 100", async ({ page, isMobile }) => {
   await hydrated(page);
   const bar = page.getByTestId("scroll-progress");
   await expect(bar).toBeAttached();
-  await page.evaluate(() =>
-    window.scrollTo(0, document.documentElement.scrollHeight),
-  );
-  await expect(page.getByText("SYNC 100%")).toBeVisible({ timeout: 10000 });
+  // A late pin refresh can grow the page after the jump: keep going to the end, as a visitor would.
+  await expect(async () => {
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await expect(page.getByText("SYNC 100%")).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 10000 });
   const sx = await bar.evaluate(
     (n) => new DOMMatrix(getComputedStyle(n).transform).a,
   );

@@ -348,3 +348,14 @@ html.hud-cursor-on .om-root * {
 html.hud-cursor-on:has(.om-root) .hud-cursor {
   display: none;
 }
+
+/* While Lenis runs (it adds .lenis to <html>) it owns smooth scrolling: the CSS smooth
+   scroll-behavior would turn every programmatic jump into a second, competing animation. */
+html.lenis {
+  scroll-behavior: auto !important;
+}
+/* From Lenis' own stylesheet, minus its overflow rule (the intro and Omarchy own the page lock). */
+html.lenis,
+html.lenis body {
+  height: auto;
+}

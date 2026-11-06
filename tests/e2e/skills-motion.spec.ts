@@ -1,10 +1,10 @@
-import { test, expect } from "./fixtures";
+import { test, expect, hydrated } from "./fixtures";
 
 test("skills bars fill with scroll", async ({ page, isMobile }) => {
   test.skip(isMobile, "desktop scroll check");
   await page.goto("/");
   await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(500);
+  await hydrated(page);
   const meter = page.locator("#skills [role=meter]").first();
   const lit = () => meter.locator(".sync-seg.bg-bone").count();
   // Section just entering from below: the first meter is still under the fold.
