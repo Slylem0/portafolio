@@ -33,6 +33,14 @@ test.describe("reduced motion", () => {
       await expect(el).toBeVisible();
       expect(await el.evaluate((n) => getComputedStyle(n).opacity)).toBe("1");
     }
+    // Without motion there is no horizontal track: every poster sits inside the page width.
+    const inside = await page.locator("#sessions ul").first().locator(":scope > li").evaluateAll((lis) =>
+      lis.map((li) => {
+        const r = li.getBoundingClientRect();
+        return r.left >= 0 && r.right <= document.documentElement.clientWidth + 1;
+      }),
+    );
+    expect(inside).toEqual(Array(7).fill(true));
     const posters = page.locator("#sessions ul").first().locator(":scope > li");
     await expect(posters).toHaveCount(7);
     for (let i = 0; i < 7; i++) {

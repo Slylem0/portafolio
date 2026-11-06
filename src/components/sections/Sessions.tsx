@@ -35,6 +35,8 @@ export default function Sessions() {
 
       // Desktop: pin the stage and slide the posters horizontally with the scroll.
       mm.add(DESKTOP_QUERY, () => {
+        // Switch the markup to its one-row track layout only while this effect runs.
+        el.dataset.hscroll = "";
         const distance = () => Math.max(0, track.scrollWidth - stage.clientWidth);
         const tween = gsap.to(track, {
           x: () => -distance(),
@@ -60,7 +62,10 @@ export default function Sessions() {
           scrollToY(st.start + p * (st.end - st.start));
         };
         track.addEventListener("focusin", onFocus);
-        return () => track.removeEventListener("focusin", onFocus);
+        return () => {
+          track.removeEventListener("focusin", onFocus);
+          delete el.dataset.hscroll;
+        };
       });
 
       // Narrow screens: each poster rises in once.
@@ -74,7 +79,7 @@ export default function Sessions() {
   );
 
   return (
-    <section ref={section} id="sessions" aria-labelledby="sessions-title" className="relative overflow-hidden bg-bg">
+    <section ref={section} id="sessions" aria-labelledby="sessions-title" className="group/sessions relative overflow-hidden bg-bg">
       {/* Title panel: raised black slab on a faint dot field */}
       <div className="relative border-y border-bone/15 bg-panel">
         <div aria-hidden="true" className="dither absolute inset-0" />
@@ -96,11 +101,11 @@ export default function Sessions() {
         <DitherRule variant="lines" className="h-1.5" />
       </div>
 
-      <div data-fx="stage" className="relative py-14 md:py-20 lg:flex lg:min-h-screen lg:flex-col lg:justify-center lg:py-10">
+      <div data-fx="stage" className="relative py-14 md:py-20 group-data-[hscroll]/sessions:flex group-data-[hscroll]/sessions:min-h-screen group-data-[hscroll]/sessions:flex-col group-data-[hscroll]/sessions:justify-center group-data-[hscroll]/sessions:py-10">
         {/* Desktop HUD: counter and hint above the track */}
         <div
           aria-hidden="true"
-          className="mx-auto mb-6 hidden w-full max-w-7xl items-center justify-between px-12 font-mono text-xs tracking-[0.3em] text-g-300 lg:flex"
+          className="mx-auto mb-6 hidden w-full max-w-7xl items-center justify-between px-12 font-mono text-xs tracking-[0.3em] text-g-300 group-data-[hscroll]/sessions:flex"
         >
           <span data-testid="sessions-counter" className="text-bone">
             #{String(current).padStart(2, "0")} / {total}
@@ -120,20 +125,21 @@ export default function Sessions() {
           role="list"
           data-testid="sessions-track"
           className={cn(
-            "mx-auto grid max-w-7xl gap-8 px-4 sm:px-8 md:grid-cols-2 md:gap-10",
-            // Desktop: one long row that the scroll slides sideways.
-            "lg:mx-0 lg:flex lg:w-max lg:max-w-none lg:gap-10 lg:px-[max(3rem,calc((100vw-80rem)/2+3rem))] lg:will-change-transform",
+            "mx-auto grid max-w-7xl gap-8 px-4 sm:px-8 md:grid-cols-2 md:gap-10 lg:px-12 xl:grid-cols-3",
+            // Desktop with motion: one long row that the scroll slides sideways.
+            "group-data-[hscroll]/sessions:mx-0 group-data-[hscroll]/sessions:flex group-data-[hscroll]/sessions:w-max group-data-[hscroll]/sessions:max-w-none group-data-[hscroll]/sessions:gap-10 group-data-[hscroll]/sessions:px-[max(3rem,calc((100vw-80rem)/2+3rem))] group-data-[hscroll]/sessions:will-change-transform",
           )}
         >
           {sessions.map((s, i) => (
             <li
               key={s.slug}
               className={cn(
-                "flex min-w-0 lg:w-[24rem] lg:shrink-0",
-                // Centre a lone last poster in the two-column grid.
+                "flex min-w-0 group-data-[hscroll]/sessions:w-[24rem] group-data-[hscroll]/sessions:shrink-0",
+                // Centre a lone last poster instead of leaving it hanging on the left.
                 i === sessions.length - 1 &&
                   sessions.length % 2 === 1 &&
-                  "md:col-span-2 md:mx-auto md:w-[calc(50%-1.25rem)] lg:col-span-1 lg:mx-0 lg:w-[24rem]",
+                  "md:col-span-2 md:mx-auto md:w-[calc(50%-1.25rem)] xl:col-span-1 xl:w-auto group-data-[hscroll]/sessions:mx-0 group-data-[hscroll]/sessions:w-[24rem]",
+                i === sessions.length - 1 && sessions.length % 3 === 1 && "xl:col-start-2",
               )}
             >
               <TiltCard className="w-full">
