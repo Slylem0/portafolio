@@ -57,7 +57,7 @@ function makeConstellations(): Constellation[] {
 /**
  * Fixed sky behind the page. A third of it is there from the first frame and the rest fills in
  * with the scroll: dots, thin Eva crosses, constellations and, at the very end, a tall cross of
- * light. It reacts to the visitor: stars drift against the pointer and brighten near it, NERV
+ * light. It reacts to the visitor: stars drift against the pointer (or the phone's tilt) and brighten near it, NERV
  * target lines lock onto the closest ones, fast scrolling stretches them into hyperspace
  * streaks, clicking empty space detonates an Eva cross, every section that enters the screen
  * sets one off at the edge, and the odd shooting star crosses the sky.
@@ -85,6 +85,9 @@ export default function Starfield() {
     let hot = false;
     let offX = 0;
     let offY = 0;
+    // Phone tilt (-1..1), used as the parallax target where there is no mouse.
+    let tiltX = 0;
+    let tiltY = 0;
     // Scroll velocity (px/s), smoothed.
     let vel = 0;
     let lastY = scrollY;
@@ -343,8 +346,8 @@ export default function Starfield() {
       vel = approach(vel, (y - lastY) / dt, 12, dt);
       if (Math.abs(vel) < 5) vel = 0;
       lastY = y;
-      const tx = onPage ? (px / w) * 2 - 1 : 0;
-      const ty = onPage ? (py / h) * 2 - 1 : 0;
+      const tx = onPage ? (px / w) * 2 - 1 : tiltX;
+      const ty = onPage ? (py / h) * 2 - 1 : tiltY;
       offX = approach(offX, tx, 3.5, dt);
       offY = approach(offY, ty, 3.5, dt);
 
@@ -404,6 +407,18 @@ export default function Starfield() {
       if (String(getSelection?.() ?? "").length > 0) return;
       burst(e.clientX, e.clientY, Math.min(h * 0.75, 560), 1);
     };
+    // Touch screens: tilt the phone to drift the sky (only where no permission prompt is needed).
+    const onTilt = (e: DeviceOrientationEvent) => {
+      if (e.gamma == null || e.beta == null) return;
+      tiltX = Math.max(-1, Math.min(1, e.gamma / 30));
+      tiltY = Math.max(-1, Math.min(1, (e.beta - 45) / 30));
+      wake(150);
+    };
+    const tiltable =
+      !fine &&
+      typeof DeviceOrientationEvent !== "undefined" &&
+      !("requestPermission" in DeviceOrientationEvent);
+    if (tiltable) addEventListener("deviceorientation", onTilt);
     addEventListener("scroll", onScroll, { passive: true });
     addEventListener("click", onClick);
     if (fine) {
@@ -438,6 +453,7 @@ export default function Starfield() {
       removeEventListener("scroll", onScroll);
       removeEventListener("click", onClick);
       removeEventListener("pointermove", onMove);
+      removeEventListener("deviceorientation", onTilt);
       html.removeEventListener("pointerleave", onLeave);
       io.disconnect();
       clearInterval(tick);
