@@ -77,3 +77,33 @@ describe("validateQuestion", () => {
     expect(validateQuestion("x")).toBeNull();
   });
 });
+
+describe("parseModelOutput recovers Nova's malformed JSON (real outputs)", () => {
+  it("stray quote before an object", () => {
+    const text =
+      '{"cores":[{"id":"ENGINEER","vote":"YES","line":"Pablo has solid cloud skills."},"{"id":"COWBOY","vote":"YES","line":"He\'s got the chops, trust me."},{"id":"STUDENT","vote":"YES","line":"Pablo\'s experience is promising."}]}';
+    const r = parseModelOutput(text)!;
+    expect(r.cores.map((c) => c.id)).toEqual(["ENGINEER", "COWBOY", "STUDENT"]);
+    expect(r.cores[1].line).toBe("He's got the chops, trust me.");
+    expect(r.verdict).toBe("APPROVED");
+  });
+  it("missing opening braces", () => {
+    const text =
+      '{"cores":[{"id":"ENGINEER","vote":"YES","line":"Pablo has solid cloud knowledge."},"id":"COWBOY","vote":"NO","line":"He\'s got the chops, partner."},"id":"STUDENT","vote":"NO","line":"Pablo\'s experience aligns well."}]';
+    const r = parseModelOutput(text)!;
+    expect(r.cores.map((c) => c.vote)).toEqual(["YES", "NO", "NO"]);
+    expect(r.verdict).toBe("REJECTED");
+  });
+  it("keeps escaped quotes inside a line", () => {
+    const text = '{"cores":[{"id":"ENGINEER","vote":"YES","line":"Say \\"ship it\\"."},"{"id":"COWBOY","vote":"YES","line":"Ride."},{"id":"STUDENT","vote":"NO","line":"Hmm."}]}';
+    expect(parseModelOutput(text)!.cores[0].line).toBe('Say "ship it".');
+  });
+  it("still rejects a missing core so the handler retries", () => {
+    const text = '{"cores":[{"id":"ENGINEER","vote":"YES","line":"Go is useful."},{"id":"COWBOY","vote":"YES","line":"Next up?"}]}';
+    expect(parseModelOutput(text)).toBeNull();
+  });
+  it("still rejects duplicate cores and bad votes", () => {
+    expect(parseModelOutput('"id":"ENGINEER","vote":"YES","line":"a" "id":"ENGINEER","vote":"NO","line":"b" "id":"STUDENT","vote":"YES","line":"c"')).toBeNull();
+    expect(parseModelOutput('"id":"ENGINEER","vote":"MAYBE","line":"a" "id":"COWBOY","vote":"NO","line":"b" "id":"STUDENT","vote":"YES","line":"c"')).toBeNull();
+  });
+});

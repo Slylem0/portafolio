@@ -37,12 +37,9 @@ function extractJson(text: string): unknown {
   return undefined;
 }
 
-export function parseModelOutput(text: string): TriadResponse | null {
-  if (typeof text !== "string") return null;
-  const data = extractJson(text);
-  if (data === undefined) return null;
-  const raw = (data as { cores?: unknown })?.cores;
-  if (!Array.isArray(raw) || raw.length !== 3) return null;
+/** The three cores from loose entries, or null unless each id appears exactly once with a valid vote. */
+function fromEntries(raw: unknown[]): TriadResponse | null {
+  if (raw.length !== 3) return null;
   const byId = new Map<CoreId, Core>();
   for (const c of raw) {
     if (!c || typeof c !== "object") return null;
@@ -58,6 +55,28 @@ export function parseModelOutput(text: string): TriadResponse | null {
   if (cores.some((c) => !c)) return null;
   const yes = cores.filter((c) => c.vote === "YES").length;
   return { cores, verdict: yes >= 2 ? "APPROVED" : "REJECTED" };
+}
+
+/** One core written as "id", "vote", "line" in that order, whatever broken JSON surrounds it. */
+const CORE_RE = /"id"\s*:\s*"([A-Za-z]+)"\s*,\s*"vote"\s*:\s*"([A-Za-z]+)"\s*,\s*"line"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
+
+/**
+ * Nova Lite sometimes breaks the JSON around otherwise fine cores (a stray quote, a missing
+ * brace). Pull each core out on its own; the same checks as the JSON path then apply.
+ */
+function recoverCores(text: string): TriadResponse | null {
+  const entries = [...text.matchAll(CORE_RE)].map(([, id, vote, line]) => ({
+    id: id.toUpperCase(),
+    vote,
+    line: (tryParse(`"${line}"`) as string | undefined) ?? line,
+  }));
+  return fromEntries(entries);
+}
+
+export function parseModelOutput(text: string): TriadResponse | null {
+  if (typeof text !== "string") return null;
+  const raw = (extractJson(text) as { cores?: unknown } | undefined)?.cores;
+  return (Array.isArray(raw) ? fromEntries(raw) : null) ?? recoverCores(text);
 }
 
 export function validateQuestion(body: unknown): { question: string; lang: "en" | "es" } | null {
