@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { useLang, type Dict } from "@/i18n";
 import { canAnimate } from "@/lib/motion/env";
 import { complete, runCommand, type TermAction } from "../terminal";
-import { askTriad, scoreOf, type TriadResult } from "../triad/triadClient";
+import { askTriad, metaLine, scoreOf, type TriadResult } from "../triad/triadClient";
+import { emitSky } from "../events";
 
 /** `shown`: how many lines are typed out so far (undefined = all). */
 type Block = { id: number; input?: string; lines: string[]; shown?: number };
-export type TerminalAction = Exclude<TermAction, { type: "clear" } | { type: "triad" }>;
+export type TerminalAction = Exclude<TermAction, { type: "clear" } | { type: "triad" } | { type: "atfield" }>;
 
 /** ms per typed line. */
 const TYPE_MS = 18;
@@ -22,6 +23,7 @@ function triadLines(r: TriadResult, t: Dict): string[] {
     ...r.response.cores.map((c) => `${name[c.id].padEnd(width)}  ${(c.vote === "YES" ? tr.yes : tr.no).padEnd(3)}  ${c.line}`),
     "",
     `${tr.resolution.replace("{verdict}", verdict).replace("{score}", scoreOf(r.response))}  ·  ${source}`,
+    ...(r.meta && !r.offline ? [`└ ${metaLine(r.meta)}`] : []),
   ];
 }
 
@@ -87,12 +89,14 @@ export default function TerminalWin({ onAction }: { onAction(a: TerminalAction):
       // Live call to the TRIAD backend (Lambda -> Bedrock); falls back to the local pool by itself.
       void askTriad(action.question, lang).then((r) => {
         if (!mounted.current) return;
+        emitSky("verdict");
         const lines = [...res.lines, ...triadLines(r, t)];
         setBlocks((bs) =>
           bs.map((b) => (b.id === id ? { ...b, lines, shown: animate.current ? res.lines.length : undefined } : b)),
         );
       });
-    } else if (action) onAction(action);
+    } else if (action?.type === "atfield") emitSky("atfield");
+    else if (action) onAction(action);
   };
 
   /** Tab: complete the command; with several matches, list them like a real shell. */
@@ -131,11 +135,12 @@ export default function TerminalWin({ onAction }: { onAction(a: TerminalAction):
   return (
     <div
       ref={scroller}
-      className="min-h-full cursor-text font-mono text-[12px] leading-[1.45]"
+      className="om-crt relative min-h-full cursor-text font-mono text-[12px] leading-[1.45]"
       onClick={() => {
         if (!window.getSelection()?.toString()) input.current?.focus({ preventScroll: true });
       }}
     >
+      <div aria-hidden="true" className="om-crt-lines pointer-events-none absolute -inset-3" />
       {blocks.map((b) => (
         <div key={b.id} data-testid="omarchy-terminal-output" className="mb-1">
           {b.input !== undefined && (

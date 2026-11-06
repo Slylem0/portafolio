@@ -87,7 +87,8 @@ test("all interactive elements are keyboard focusable with visible outline", asy
 test("Omarchy chunk not loaded before activation", async ({ page }) => {
   const chunk: string[] = [];
   page.on("request", (r) => {
-    if (/OmarchyMode/.test(r.url())) chunk.push(r.url());
+    // The JS chunk; its small stylesheet ships with the page (it used to be inlined under 4 KB).
+    if (/OmarchyMode[^/]*\.js/.test(r.url())) chunk.push(r.url());
   });
   await gotoReady(page);
   // Scroll the whole page so every lazy island hydrates; none of them may pull the chunk.

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { askTriad, scoreOf } from "@/components/omarchy/triad/triadClient";
+import { askTriad, metaLine, scoreOf, toMeta } from "@/components/omarchy/triad/triadClient";
 import { localAnswer, POOL_SIZE } from "@/components/omarchy/triad/fallback";
 
 const URL = "https://triad.example.on.aws/";
@@ -141,5 +141,29 @@ describe("localAnswer", () => {
 describe("scoreOf", () => {
   it("formats yes–no with an en dash", () => {
     expect(scoreOf(valid as any)).toBe("2–1");
+  });
+});
+
+describe("toMeta", () => {
+  it("accepts well-formed telemetry", () => {
+    expect(toMeta({ ms: 1083, model: "amazon.nova-lite", region: "us-east-1", retried: false })).toEqual({
+      ms: 1083, model: "amazon.nova-lite", region: "us-east-1", retried: false,
+    });
+  });
+  it("drops anything odd instead of showing it", () => {
+    expect(toMeta(undefined)).toBeUndefined();
+    expect(toMeta({ ms: -1, model: "amazon.nova-lite", region: "us-east-1", retried: false })).toBeUndefined();
+    expect(toMeta({ ms: 10, model: "<script>", region: "us-east-1", retried: false })).toBeUndefined();
+    expect(toMeta({ ms: 10, model: "amazon.nova-lite", region: "mars", retried: false })).toBeUndefined();
+    expect(toMeta({ ms: 10, model: "amazon.nova-lite", region: "us-east-1", retried: "no" })).toBeUndefined();
+  });
+});
+
+describe("metaLine", () => {
+  it("formats seconds, model, region and the path", () => {
+    expect(metaLine({ ms: 1083, model: "amazon.nova-lite", region: "us-east-1", retried: false })).toBe(
+      "1.08 s · amazon.nova-lite · us-east-1 · Lambda → Bedrock Converse",
+    );
+    expect(metaLine({ ms: 2272, model: "amazon.nova-lite", region: "us-east-1", retried: true })).toMatch(/· retry$/);
   });
 });

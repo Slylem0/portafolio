@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useLang } from "@/i18n";
 import { cn } from "@/lib/utils";
-import { askTriad, MAX_QUESTION, scoreOf, type CoreId, type TriadResult } from "./triadClient";
+import { askTriad, MAX_QUESTION, metaLine, scoreOf, type CoreId, type TriadResult } from "./triadClient";
+import { emitSky } from "../events";
 
 const REVEAL_MS = 350;
 const CORE_KEYS: Record<CoreId, "engineer" | "cowboy" | "student"> = {
@@ -90,6 +91,10 @@ export default function Triad() {
   };
 
   const done = !!result && shown >= 3;
+  // The verdict detonates a cross on the desktop wallpaper.
+  useEffect(() => {
+    if (done) emitSky("verdict");
+  }, [done]);
   // Quota (per IP) and the global ceiling are not outages: say so, while still answering locally.
   const quota = result?.reason === "quota" || result?.reason === "busy";
   const linkLabel = !result?.offline ? t.triad.linkOk : quota ? t.triad.quota : t.triad.linkLost;
@@ -242,6 +247,11 @@ export default function Triad() {
             )}
           >
             {resolution}
+          </p>
+        )}
+        {done && result?.meta && (
+          <p data-testid="triad-meta" className="om-muted mt-1.5 text-center text-[10px] tracking-widest break-words">
+            └ {metaLine(result.meta)}
           </p>
         )}
       </div>

@@ -37,3 +37,12 @@ export function takePendingOpen(): boolean {
 export function isIntroOpen(): boolean {
   return typeof document !== "undefined" && document.documentElement.classList.contains("intro-open");
 }
+
+/** Things that make the desktop wallpaper react (a cross detonation, a shooting star). */
+export const SKY_EVENT = "omarchy:sky";
+export type SkyKind = "verdict" | "atfield" | "workspace";
+
+/** Tell the Omarchy wallpaper something happened; harmless when nobody listens. */
+export function emitSky(kind: SkyKind): void {
+  if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent<SkyKind>(SKY_EVENT, { detail: kind }));
+}

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState, 
 import { useLang } from "@/i18n";
 import { sessions } from "@/data/sessions";
 import AsciiOctahedron from "@/components/ascii/AsciiOctahedron";
+import Starfield from "@/components/fx/Starfield";
+import { emitSky } from "./events";
 import { keyToAction, type Action } from "./shortcuts";
 import { dwindle, type Rect } from "./tiling";
 import TopBar, { WORKSPACES, type WsNum } from "./TopBar";
@@ -131,6 +133,15 @@ interface DesktopProps {
 export default function Desktop({ theme, onTheme, onExit, rootRef }: DesktopProps) {
   const { lang, t, setLang } = useLang();
   const [s, dispatch] = useReducer(reducer, undefined, initial);
+  // Switching workspace sends a shooting star across the wallpaper (not on the first render).
+  const firstWs = useRef(true);
+  useEffect(() => {
+    if (firstWs.current) {
+      firstWs.current = false;
+      return;
+    }
+    emitSky("workspace");
+  }, [s.active]);
   const mobile = useIsMobile();
   const areaRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
@@ -362,6 +373,10 @@ export default function Desktop({ theme, onTheme, onExit, rootRef }: DesktopProp
         onPointerUp={onPointerUp}
         onPointerCancel={() => (swipe.current = null)}
       >
+        {/* Live wallpaper: the Eva-cross sky, seen through the glass windows. */}
+        <div aria-hidden="true" className="om-sky absolute inset-0">
+          <Starfield mode="desktop" />
+        </div>
         {!mobile && (
           <div aria-hidden="true" className="om-wall absolute inset-0">
             <AsciiOctahedron variant="wallpaper" />

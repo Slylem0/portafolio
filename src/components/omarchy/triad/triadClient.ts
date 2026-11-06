@@ -6,7 +6,9 @@ import { localAnswer } from "./fallback";
 export type { Core, CoreId, TriadResponse };
 /** Why an answer came from the local pool: the hourly quota (per IP), the global ceiling, or anything else. */
 export type OfflineReason = "quota" | "busy" | "error";
-export type TriadResult = { response: TriadResponse; offline: boolean; reason?: OfflineReason };
+/** Telemetry the backend attaches to a live answer. */
+export type TriadMeta = { ms: number; model: string; region: string; retried: boolean };
+export type TriadResult = { response: TriadResponse; offline: boolean; reason?: OfflineReason; meta?: TriadMeta };
 type Deps = { fetch?: typeof fetch; url?: string | null; timeoutMs?: number };
 
 export const MAX_QUESTION = 200;
@@ -44,6 +46,22 @@ export function toResponse(data: unknown): TriadResponse | null {
   return { cores: cores as [Core, Core, Core], verdict: yes >= 2 ? "APPROVED" : "REJECTED" };
 }
 
+/** Strictly validated telemetry, or undefined (never shown unless every field looks right). */
+export function toMeta(data: unknown): TriadMeta | undefined {
+  const m = data as Partial<TriadMeta> | null | undefined;
+  if (!m || typeof m !== "object") return undefined;
+  if (typeof m.ms !== "number" || !Number.isFinite(m.ms) || m.ms < 0 || m.ms > 60_000) return undefined;
+  if (typeof m.model !== "string" || !/^[a-z0-9.:-]{1,40}$/i.test(m.model)) return undefined;
+  if (typeof m.region !== "string" || !/^[a-z]{2}-[a-z]+-\d$/.test(m.region)) return undefined;
+  if (typeof m.retried !== "boolean") return undefined;
+  return { ms: Math.round(m.ms), model: m.model, region: m.region, retried: m.retried };
+}
+
+/** "1.08 s · amazon.nova-lite · us-east-1 · Lambda → Bedrock Converse" (plus "· retry" when it took two calls). */
+export function metaLine(m: TriadMeta): string {
+  return `${(m.ms / 1000).toFixed(2)} s · ${m.model} · ${m.region} · Lambda → Bedrock Converse${m.retried ? " · retry" : ""}`;
+}
+
 /** "2–1": YES votes – NO votes. */
 export function scoreOf(r: TriadResponse): string {
   const yes = r.cores.filter((c) => c.vote === "YES").length;
@@ -69,6 +87,7 @@ export async function askTriad(question: string, lang: Lang, deps: Deps = {}): P
       resolve("error");
     }, deps.timeoutMs ?? TIMEOUT_MS);
   });
+  let meta: TriadMeta | undefined;
   const request = (async (): Promise<TriadResponse | OfflineReason> => {
     // No explicit content-type: a text/plain body is a CORS "simple request" (no preflight round trip);
     // the Lambda parses the JSON body regardless.
@@ -78,12 +97,14 @@ export async function askTriad(question: string, lang: Lang, deps: Deps = {}): P
       return body?.error === "busy" ? "busy" : "quota";
     }
     if (!res.ok) return "error";
-    return toResponse(await res.json()) ?? "error";
+    const data = (await res.json()) as { meta?: unknown };
+    meta = toMeta(data?.meta);
+    return toResponse(data) ?? "error";
   })().catch((): OfflineReason => "error");
 
   try {
     const out = await Promise.race([request, timeout]);
-    return typeof out === "string" ? offline(out) : { response: out, offline: false };
+    return typeof out === "string" ? offline(out) : { response: out, offline: false, ...(meta ? { meta } : {}) };
   } catch {
     return offline();
   } finally {

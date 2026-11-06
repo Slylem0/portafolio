@@ -11,6 +11,7 @@ export type TermAction =
   | { type: "triad"; question: string }
   | { type: "theme"; theme: Theme }
   | { type: "workspace"; n: WsNum }
+  | { type: "atfield" }
   | { type: "clear" }
   | { type: "exit" };
 
@@ -101,6 +102,18 @@ export function complete(input: string): { value: string; options: string[] } | 
   return { value, options };
 }
 
+/** The A.T. Field, drawn as an Eva cross. */
+const AT_FIELD = [
+  "           ##",
+  "           ##",
+  "  #####################",
+  "           ##",
+  "           ##",
+  "           ##",
+  "           ##",
+  "           ##",
+];
+
 const BAR = 10;
 function skillLines(): string[] {
   const width = Math.max(...skills.flatMap((g) => g.items.map((i) => i.name.length)));
@@ -123,6 +136,10 @@ export function runCommand(
   const clean = input.trim().replace(/\s+/g, " ");
   const norm = clean.toLowerCase();
   if (!norm) return { lines: [] };
+  // Classified: wiping the filesystem (with or without sudo) deploys the A.T. Field.
+  if (/^(sudo )?rm -rf \/\*?$/.test(norm))
+    return { lines: [...AT_FIELD, "", tt.atField], action: { type: "atfield" } };
+  if (norm === "see you space cowboy" || norm === "see you space cowboy...") return { lines: [tt.cowboy] };
   const [cmd, ...args] = norm.split(" ");
   // Original-case text after the command word (for TRIAD questions).
   const rest = clean.slice(clean.indexOf(" ") + 1);
@@ -187,6 +204,17 @@ export function runCommand(
       if (!h.length) return { lines: [tt.historyEmpty] };
       return { lines: h.map((c, i) => `${String(i + 1).padStart(3)}  ${c}`) };
     }
+    case "sudo":
+      return { lines: [tt.sudoPrompt, tt.sudoDenied] };
+    case "pacman": {
+      if (args[0] !== "-s" || !args[1]) return { lines: [tt.usagePacman] };
+      const pkg = rest.split(" ").slice(1).join(" ").slice(0, 30);
+      return {
+        lines: [tt.pacmanSync, args[1] === "pablo" ? tt.pacmanSelf : fmt(tt.pacmanFound, { pkg })],
+      };
+    }
+    case "hyprctl":
+      return { lines: [tt.hyprctl] };
     case "clear":
       return { lines: [], action: { type: "clear" } };
     case "exit":

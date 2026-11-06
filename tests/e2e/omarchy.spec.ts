@@ -37,8 +37,10 @@ test.describe("desktop", () => {
     await gotoReady(page);
     await expect(page.getByTestId("omarchy")).toHaveCount(0);
     const loaded = () =>
-      page.evaluate(() => performance.getEntriesByType("resource").some((r) => r.name.includes("OmarchyMode")));
-    expect(await loaded()).toBe(false); // the desktop chunk is lazy
+      page.evaluate(() =>
+        performance.getEntriesByType("resource").some((r) => r.name.includes("OmarchyMode") && r.name.endsWith(".js")),
+      );
+    expect(await loaded()).toBe(false); // the desktop JS chunk is lazy (its small stylesheet ships with the page)
     await page.getByTestId("omarchy-hint").click();
     const root = page.getByTestId("omarchy");
     await expect(root).toBeVisible();
@@ -566,6 +568,7 @@ test.describe("terminal commands", () => {
             { id: "STUDENT", vote: "NO", line: "I want to see more Go first." },
           ],
           verdict: "APPROVED",
+          meta: { ms: 1083, model: "amazon.nova-lite", region: "us-east-1", retried: false },
         }),
       });
     });
@@ -576,6 +579,7 @@ test.describe("terminal commands", () => {
     await expect(out).toContainText("RESOLUTION: APPROVED 2–1");
     await expect(out).toContainText("LINK ACTIVE — AWS BEDROCK");
     await expect(out).toContainText("He ships, man.");
+    await expect(out).toContainText("1.08 s · amazon.nova-lite · us-east-1 · Lambda → Bedrock Converse");
     expect(bodies[0]).toEqual({ question: "Should I hire Pablo?", lang: "en" });
   });
 });

@@ -14,6 +14,7 @@
   --om-accent-2: #a3a3a3;
   --om-bg: #0a0a0a;
   --om-win-bg: rgb(10 10 10 / 0.94);
+  --om-glass: rgb(8 8 8 / 0.62);
   --om-inactive: #404040;
   --om-muted: #a3a3a3;
 }
@@ -27,6 +28,7 @@
   --om-accent-2: #525252;
   --om-bg: #f5f5f5;
   --om-win-bg: rgb(250 250 250 / 0.96);
+  --om-glass: rgb(250 250 250 / 0.8);
   --om-inactive: #a3a3a3;
   --om-muted: #525252;
 }
@@ -38,13 +40,15 @@
   --om-accent-2: #d4d4d4;
   --om-bg: #000000;
   --om-win-bg: rgb(0 0 0 / 0.97);
+  --om-glass: rgb(0 0 0 / 0.68);
   --om-inactive: #737373;
   --om-muted: #b3b3b3;
   font-family: var(--font-mono);
 }
 .om-root[data-theme="terminal"] .font-sans { font-family: var(--font-mono); }
 /* The wallpaper canvas paints white glyphs: flip it for the light theme. */
-.om-root[data-theme="inverse"] .om-wall { filter: invert(1); }
+.om-root[data-theme="inverse"] .om-wall,
+.om-root[data-theme="inverse"] .om-sky { filter: invert(1); }
 
 .om-accent { color: var(--om-accent); }
 .om-muted { color: var(--om-muted); }
@@ -59,7 +63,7 @@
 .om-focus:focus-visible { outline: 2px solid var(--om-accent); outline-offset: 2px; }
 
 /* Wallpaper: faded ASCII octahedron with a theme vignette. */
-.om-wall { opacity: 0.4; }
+.om-wall { opacity: 0.22; }
 .om-vignette { background: radial-gradient(ellipse at center, transparent 30%, var(--om-bg) 85%); }
 
 /* Tiled windows: Hyprland-like hairline borders, solid active border, animated reflow. */
@@ -69,7 +73,9 @@
   top: 0;
   display: flex;
   padding: 1px;
-  background: var(--om-inactive);
+  /* Borders as outlines, not a filled background: the glass inside must stay see-through. */
+  outline: 1px solid var(--om-inactive);
+  outline-offset: -1px;
   transition:
     transform 280ms var(--om-ease),
     width 280ms var(--om-ease),
@@ -77,9 +83,12 @@
 }
 .om-win[data-focused="true"] {
   padding: 2px;
-  background: var(--om-accent);
+  outline: 2px solid var(--om-accent);
+  outline-offset: -2px;
+  /* Active window glows a little, like a Hyprland border with shadows on. */
+  box-shadow: 0 0 28px -6px color-mix(in srgb, var(--om-accent) 55%, transparent);
 }
-.om-win:focus-visible { outline: none; }
+
 .om-win-inner {
   display: flex;
   flex: 1;
@@ -88,6 +97,32 @@
   min-height: 0;
   background: var(--om-win-bg);
 }
+/* Hyprland glass: translucent windows with blur, so the live wallpaper shows through. */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .om-win-inner {
+    background: var(--om-glass);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+  }
+}
+
+/* Terminal: a CRT glow on the text, faint scanlines and a block caret. */
+.om-crt {
+  text-shadow: 0 0 6px color-mix(in srgb, var(--om-accent) 35%, transparent);
+  caret-shape: block;
+}
+.om-crt-lines {
+  background: repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.07) 0 1px, transparent 1px 3px);
+}
+.om-root[data-theme="inverse"] .om-crt { text-shadow: none; }
+.om-root[data-theme="inverse"] .om-crt-lines { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .om-crt-blink { animation: om-blink 1.1s steps(1, end) infinite; }
+}
+@keyframes om-blink {
+  50% { opacity: 0; }
+}
+
 .om-win-new { animation: om-win-in 260ms var(--om-ease); }
 @keyframes om-win-in {
   from { opacity: 0; scale: 0.92; }

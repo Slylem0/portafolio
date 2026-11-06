@@ -13,6 +13,10 @@ export type Deps = {
   now(): Date;
 };
 
+const MODEL_ID = "us.amazon.nova-lite-v1:0";
+/** Telemetry label for the model (the inference profile id without its routing prefix and version). */
+const MODEL_LABEL = "amazon.nova-lite";
+
 // The browser gives up at 8 s; a retry is only worth it if its answer can still arrive in time.
 const BUDGET_MS = 7_000;
 // A retry needs at least this much budget left to be worth attempting.
@@ -68,7 +72,9 @@ export function createHandler(deps: Deps) {
         result = parseModelOutput(await deps.converse(system, question, { temperature: 0.2, timeoutMs: left }));
       }
       if (!result) return done(502, { error: "bad_model_output" });
-      return done(200, result);
+      // Real telemetry for the visitor: proof the answer came from Bedrock, not a script.
+      const meta = { ms: Date.now() - t0, model: MODEL_LABEL, region: process.env.AWS_REGION ?? "us-east-1", retried };
+      return done(200, { ...result, meta });
     } catch (err) {
       return done(502, { error: "upstream_error" }, err instanceof Error ? err.name : "unknown");
     }
@@ -84,7 +90,7 @@ export async function bedrockConverse(
 ): Promise<string> {
   const out = await client.send(
     new ConverseCommand({
-      modelId: "us.amazon.nova-lite-v1:0",
+      modelId: MODEL_ID,
       system: [{ text: system }],
       messages: [{ role: "user", content: [{ text: question }] }],
       inferenceConfig: { maxTokens: 300, temperature: opts?.temperature ?? 0.7 },

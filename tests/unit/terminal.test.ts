@@ -60,7 +60,7 @@ describe("runCommand", () => {
     expect(run("LS   Sessions")).toEqual(run("ls sessions"));
   });
   it("unknown command suggests help", () => {
-    const r = run("sudo rm -rf /");
+    const r = run("make coffee");
     expect(r.lines.join(" ")).toContain("help");
     expect(r.action).toBeUndefined();
   });
@@ -79,7 +79,7 @@ describe("runCommand", () => {
     expect(run("open 7").action).toEqual({ type: "openSession", n: 7 });
   });
   it("unknown echoes the command in original case, capped at 40 chars", () => {
-    expect(run("Sudo RM").lines[0]).toBe("command not found: Sudo RM. Try 'help'.");
+    expect(run("Make COFFEE").lines[0]).toBe("command not found: Make COFFEE. Try 'help'.");
     const long = run("x".repeat(60)).lines[0];
     expect(long).toContain("x".repeat(40) + "…");
     expect(long).not.toContain("x".repeat(41));
@@ -175,5 +175,36 @@ describe("complete (Tab)", () => {
   it("returns null without matches or input", () => {
     expect(complete("zzz")).toBeNull();
     expect(complete("")).toBeNull();
+  });
+});
+
+describe("classified commands", () => {
+  it("sudo is reported to NERV and does nothing", () => {
+    const r = run("sudo make me a sandwich");
+    expect(r.lines.join("\n")).toContain("NERV");
+    expect(r.action).toBeUndefined();
+    expect(run("sudo", "es").lines.join("\n")).toContain("NERV");
+  });
+  it("rm -rf / deploys the A.T. Field (also through sudo) and makes the sky react", () => {
+    for (const c of ["rm -rf /", "sudo rm -rf /", "rm -rf /*", "RM -RF /"]) {
+      const r = run(c);
+      expect(r.action).toEqual({ type: "atfield" });
+      expect(r.lines.join("\n")).toContain("A.T. FIELD");
+      expect(r.lines.every((l) => /^[\x20-\x7e]*$/.test(l))).toBe(true);
+    }
+  });
+  it("see you space cowboy", () => {
+    expect(run("see you space cowboy").lines.join(" ")).toContain("carry that weight");
+  });
+  it("pacman and hyprctl answer in character", () => {
+    expect(run("pacman -S pablo").lines.join(" ")).toContain("pablo");
+    expect(run("pacman -S neovim").lines.join(" ")).toContain("neovim");
+    expect(run("pacman").lines).toEqual([dicts.en.omarchy.terminal.usagePacman]);
+    expect(run("hyprctl").lines.join(" ")).toContain("dwindle");
+  });
+  it("classified commands stay out of help, which only hints at them", () => {
+    const help = run("help").lines.join("\n");
+    expect(help).not.toContain("sudo");
+    expect(help).toContain(dicts.en.omarchy.terminal.classified);
   });
 });

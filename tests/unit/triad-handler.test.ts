@@ -190,4 +190,12 @@ describe("bedrockConverse", () => {
     await bedrockConverse({ send } as any, "sys", "q", { timeoutMs: 6500 });
     expect(send.mock.calls[1][1]?.abortSignal).toBeInstanceOf(AbortSignal);
   });
+  it("200 carries real telemetry: latency, model, region, retry", async () => {
+    const r: any = await createHandler(deps())(ev({ question: "Hire Pablo?" }));
+    const body = JSON.parse(r.body);
+    expect(body.meta).toMatchObject({ model: "amazon.nova-lite", retried: false });
+    expect(body.meta.region).toMatch(/^[a-z]{2}-[a-z]+-\d$/);
+    expect(body.meta.ms).toBeGreaterThanOrEqual(0);
+    expect(body.cores).toHaveLength(3);
+  });
 });

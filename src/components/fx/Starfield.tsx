@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { canAnimate, hasFinePointer, isPageLocked } from "@/lib/motion/env";
+import { SKY_EVENT, type SkyKind } from "@/components/omarchy/events";
 import {
   approach,
   burstEnvelope,
@@ -26,6 +27,10 @@ const BONE = "245,245,245";
 const STATIC_PROGRESS = 0.5;
 /** Pointer reach (px) for the glow and the NERV target lines. */
 const REACH = 170;
+/** Desktop progress: most of the sky, crosses and constellations, no scroll story. */
+const DESKTOP_PROGRESS = 0.72;
+/** On the Omarchy desktop, clicks on windows and bars never set off a burst. */
+const DESKTOP_UI = ".om-win,button,a,input,textarea,[data-testid=omarchy-topbar],[data-testid=omarchy-dock]";
 /** Things you can click: they never set off a burst. */
 const INTERACTIVE =
   "a,button,input,textarea,select,label,summary,[role=button],[role=tab],[role=meter],[tabindex],#intro,astro-island[component-url*=Omarchy]";
@@ -136,8 +141,9 @@ function makeEvaSprite(height: number): Sprite | null {
  * streaks, clicking empty space detonates an Eva cross, every section that enters the screen
  * sets one off at the edge, and the odd shooting star crosses the sky.
  */
-export default function Starfield() {
+export default function Starfield({ mode = "page" }: { mode?: "page" | "desktop" }) {
   const canvas = useRef<HTMLCanvasElement>(null);
+  const desktop = mode === "desktop";
 
   useEffect(() => {
     const cv = canvas.current;
@@ -155,6 +161,9 @@ export default function Starfield() {
     let stars: Star[] = [];
     let w = 0;
     let h = 0;
+    // Canvas offset in the viewport (the desktop wallpaper sits below the top bar).
+    let ox = 0;
+    let oy = 0;
     // Pointer (px), whether it is on the page, and its smoothed parallax offset (-1..1).
     let px = 0;
     let py = 0;
@@ -180,8 +189,11 @@ export default function Starfield() {
 
     const resize = () => {
       const dpr = Math.min(2, devicePixelRatio || 1);
-      w = innerWidth;
-      h = innerHeight;
+      const r = cv.getBoundingClientRect();
+      w = Math.max(1, Math.round(r.width || innerWidth));
+      h = Math.max(1, Math.round(r.height || innerHeight));
+      ox = r.left;
+      oy = r.top;
       cv.width = Math.round(w * dpr);
       cv.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -189,6 +201,7 @@ export default function Starfield() {
     };
 
     const progress = () => {
+      if (desktop) return DESKTOP_PROGRESS;
       const max = html.scrollHeight - innerHeight;
       return max > 0 ? clamp01(scrollY / max) : 0;
     };
@@ -231,11 +244,13 @@ export default function Starfield() {
 
     const draw = (t: number) => {
       const p = animate ? progress() : STATIC_PROGRESS;
-      const scroll = animate ? scrollY : 0;
+      const scroll = animate && !desktop ? scrollY : 0;
       ctx.clearRect(0, 0, w, h);
       const pointer = fine && onPage;
       drawn = [];
 
+      // Behind blurred glass the desktop sky needs bigger, brighter stars to read.
+      const grow = desktop ? 1.8 : 1;
       // Stars and crosses.
       ctx.fillStyle = `rgb(${BONE})`;
       ctx.strokeStyle = `rgb(${BONE})`;
@@ -251,7 +266,7 @@ export default function Starfield() {
         if (r > 0.6) drawn.push([x, y]);
         if (s.cross) {
           ctx.globalCompositeOperation = "lighter";
-          drawCross(x, y, s.size * 4.5 * (0.6 + 0.4 * r) * (1 + boost * 0.7), a);
+          drawCross(x, y, s.size * 4.5 * grow * (0.6 + 0.4 * r) * (1 + boost * 0.7), a);
           ctx.globalCompositeOperation = "source-over";
         } else if (streak > 1) {
           // Hyperspace: the star leaves a trail opposite to its motion.
@@ -261,7 +276,7 @@ export default function Starfield() {
           line(x, y, x, y + Math.sign(vel) * streak);
           ctx.stroke();
         } else {
-          const d = s.size * 2 * (1 + boost);
+          const d = s.size * 2 * grow * (1 + boost);
           ctx.globalAlpha = a;
           ctx.fillRect(x - d / 2, y - d / 2, d, d);
         }
@@ -368,7 +383,7 @@ export default function Starfield() {
     /** One animation step: update the reactive state, draw, and keep going while anything moves. */
     const frame = (now: number) => {
       raf = 0;
-      if (document.hidden || isPageLocked(html)) return;
+      if (paused()) return;
       // Cap at ~40 fps: smooth enough, and gentle on laptops and phones.
       if (now - lastDraw < 24) {
         raf = requestAnimationFrame(frame);
@@ -378,7 +393,7 @@ export default function Starfield() {
       const t = now / 1000;
       const dt = Math.min(0.1, Math.max(0.001, t - lastT));
       lastT = t;
-      const y = scrollY;
+      const y = desktop ? 0 : scrollY;
       vel = approach(vel, (y - lastY) / dt, 12, dt);
       if (Math.abs(vel) < 5) vel = 0;
       lastY = y;
@@ -402,6 +417,10 @@ export default function Starfield() {
       if (t < activeUntil || vel !== 0 || settling || bursts.length || shooters.length)
         raf = requestAnimationFrame(frame);
     };
+    // The page sky sleeps behind Omarchy Mode; the desktop one is that wallpaper.
+    function paused() {
+      return document.hidden || (!desktop && isPageLocked(html));
+    }
     const wake = (ms = 0) => {
       activeUntil = Math.max(activeUntil, performance.now() / 1000 + ms / 1000);
       if (!raf) raf = requestAnimationFrame(frame);
@@ -425,8 +444,8 @@ export default function Starfield() {
     const onScroll = () => wake(150);
     const onMove = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
-      px = e.clientX;
-      py = e.clientY;
+      px = e.clientX - ox;
+      py = e.clientY - oy;
       onPage = true;
       const el = e.target as Element | null;
       hot = !!el?.closest?.("a,button,[role=button]");
@@ -437,11 +456,26 @@ export default function Starfield() {
       wake(200);
     };
     const onClick = (e: MouseEvent) => {
-      if (e.button !== 0 || isPageLocked(html)) return;
+      if (e.button !== 0 || (!desktop && isPageLocked(html))) return;
       const el = e.target as Element | null;
-      if (el?.closest?.(INTERACTIVE)) return;
+      const area = cv.parentElement?.parentElement;
+      if (desktop ? !el || !area?.contains(el) || el.closest?.(DESKTOP_UI) : el?.closest?.(INTERACTIVE)) return;
       if (String(getSelection?.() ?? "").length > 0) return;
-      burst(e.clientX, e.clientY, Math.min(h * 0.75, 560), 1);
+      burst(e.clientX - ox, e.clientY - oy, Math.min(h * 0.75, 560), 1);
+    };
+    // Desktop events: a TRIAD verdict detonates a cross, rm -rf / the A.T. Field, a workspace switch
+    // sends a shooting star across.
+    const onSky = (e: Event) => {
+      const kind = (e as CustomEvent<SkyKind>).detail;
+      if (kind === "verdict") burst(w * (0.2 + rnd() * 0.6), h * (0.4 + rnd() * 0.25), h * 0.8, 0.9);
+      else if (kind === "atfield") {
+        burst(w / 2, h * 0.42, h * 1.1, 1.3);
+        setTimeout(() => burst(w * 0.2, h * 0.55, h * 0.55, 0.7), 220);
+        setTimeout(() => burst(w * 0.8, h * 0.55, h * 0.55, 0.7), 380);
+      } else if (kind === "workspace") {
+        shooters.push(spawnShootingStar(rnd, w, h, performance.now() / 1000));
+        wake();
+      }
     };
     // Touch screens: tilt the phone to drift the sky (only where no permission prompt is needed).
     const onTilt = (e: DeviceOrientationEvent) => {
@@ -455,7 +489,8 @@ export default function Starfield() {
       typeof DeviceOrientationEvent !== "undefined" &&
       !("requestPermission" in DeviceOrientationEvent);
     if (tiltable) addEventListener("deviceorientation", onTilt);
-    addEventListener("scroll", onScroll, { passive: true });
+    if (desktop) addEventListener(SKY_EVENT, onSky);
+    else addEventListener("scroll", onScroll, { passive: true });
     addEventListener("click", onClick);
     if (fine) {
       addEventListener("pointermove", onMove, { passive: true });
@@ -477,7 +512,7 @@ export default function Starfield() {
       },
       { threshold: 0.2 },
     );
-    document.querySelectorAll("main > section:not(#home), #footer").forEach((s) => io.observe(s));
+    if (!desktop) document.querySelectorAll("main > section:not(#home), #footer").forEach((s) => io.observe(s));
 
     // Idle: a slow tick keeps the sky twinkling and lets shooting stars in.
     const tick = setInterval(() => {
@@ -487,6 +522,7 @@ export default function Starfield() {
     return () => {
       removeEventListener("resize", onResize);
       removeEventListener("scroll", onScroll);
+      removeEventListener(SKY_EVENT, onSky);
       removeEventListener("click", onClick);
       removeEventListener("pointermove", onMove);
       removeEventListener("deviceorientation", onTilt);
@@ -495,14 +531,18 @@ export default function Starfield() {
       clearInterval(tick);
       cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [desktop]);
 
   return (
     <canvas
       ref={canvas}
       aria-hidden="true"
-      data-testid="starfield"
-      className="pointer-events-none fixed inset-0 -z-10 h-full w-full"
+      data-testid={desktop ? "omarchy-sky" : "starfield"}
+      className={
+        desktop
+          ? "pointer-events-none absolute inset-0 h-full w-full"
+          : "pointer-events-none fixed inset-0 -z-10 h-full w-full"
+      }
     />
   );
 }
