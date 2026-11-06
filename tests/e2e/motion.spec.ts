@@ -72,3 +72,25 @@ test("omarchy keeps scroll position with smooth scroll", async ({ page, isMobile
   const after = await page.evaluate(() => scrollY);
   expect(Math.abs(after - before)).toBeLessThanOrEqual(5);
 });
+
+test("about bio words light up", async ({ page, isMobile }) => {
+  test.skip(isMobile, "desktop scroll check");
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(500);
+  const word = page.getByTestId("about-story").locator("p").first().locator("[data-word]").first();
+  expect(await word.evaluate((n) => getComputedStyle(n).color)).toBe("rgb(64, 64, 64)");
+  await page.getByTestId("about-story").scrollIntoViewIfNeeded();
+  await page.mouse.move(640, 400);
+  await page.mouse.wheel(0, 500);
+  await page.waitForTimeout(1500);
+  expect(await word.evaluate((n) => getComputedStyle(n).color)).toBe("rgb(245, 245, 245)");
+});
+
+test("about story keeps its text for assistive tech", async ({ page }) => {
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  const first = page.getByTestId("about-story").locator("p").first();
+  // Words are split into spans but read as one paragraph: the text stays intact, word by word.
+  await expect(first).toContainText(/Systems Engineering student at Universidad del Valle|Ingenier/);
+});
