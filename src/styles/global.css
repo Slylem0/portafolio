@@ -302,3 +302,35 @@ html.intro-leaving #intro {
     animation: none !important;
   }
 }
+
+/* BorderBeam: a conic highlight masked to a 1px ring, rotating around the box. */
+@property --beam-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+.border-beam {
+  padding: 1px;
+  background: conic-gradient(from var(--beam-angle), transparent 0deg, transparent 300deg, rgb(245 245 245 / 0.9) 345deg, transparent 360deg);
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  animation: border-beam linear infinite;
+}
+@keyframes border-beam {
+  to {
+    --beam-angle: 360deg;
+  }
+}
+
+/* Mission Log node lit by the drawn timeline. */
+/* The hex clip-path would cut a glow, so a lit node turns its outer ring white and grows. */
+.log-node {
+  transition:
+    background-color 0.4s ease,
+    transform 0.4s ease;
+}
+.log-node.is-lit {
+  background-color: var(--bone);
+  transform: scale(1.15);
+}
