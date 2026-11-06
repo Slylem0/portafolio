@@ -79,9 +79,9 @@ export default function Sessions() {
   );
 
   return (
-    <section ref={section} id="sessions" aria-labelledby="sessions-title" className="group/sessions relative overflow-x-clip bg-bg">
+    <section ref={section} id="sessions" aria-labelledby="sessions-title" className="group/sessions relative overflow-x-clip">
       {/* Title panel: raised black slab on a faint dot field */}
-      <div className="relative border-y border-bone/15 bg-panel">
+      <div className="relative border-y border-bone/15 bg-panel/70">
         <div aria-hidden="true" className="dither absolute inset-0" />
         <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-8 md:py-16 lg:px-12">
           <HudRule index="003" label={t.sessions.session} className="mb-6" />

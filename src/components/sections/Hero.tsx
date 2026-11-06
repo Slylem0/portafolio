@@ -74,7 +74,7 @@ export default function Hero() {
       ref={section}
       id="home"
       aria-labelledby="hero-title"
-      className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-bg pt-20 lg:pt-14"
+      className="relative isolate flex min-h-[100svh] flex-col overflow-hidden pt-20 lg:pt-14"
     >
       {/* ASCII octahedron background: right side on desktop, full width above the title on mobile */}
       <div aria-hidden="true" className="absolute inset-0 -z-10">

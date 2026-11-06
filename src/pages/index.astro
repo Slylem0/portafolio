@@ -9,6 +9,7 @@ import MissionLog from "@/components/sections/MissionLog";
 import Footer from "@/components/sections/Footer";
 import OmarchyLoader from "@/components/omarchy/OmarchyLoader";
 import IntroGate from "@/components/intro/IntroGate";
+import Starfield from "@/components/fx/Starfield";
 ---
 
 <Base
@@ -137,6 +138,7 @@ import IntroGate from "@/components/intro/IntroGate";
       );
     })();
   </script>
+  <Starfield client:idle />
   <IntroGate client:load />
   <Navbar client:load />
   <main>

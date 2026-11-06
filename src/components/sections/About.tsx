@@ -27,7 +27,7 @@ export default function About() {
     <section
       id="about"
       aria-labelledby="about-title"
-      className="relative bg-bg"
+      className="relative"
     >
       <TitleCard
         id="about-title"

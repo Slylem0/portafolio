@@ -32,7 +32,7 @@ export default function MissionLog() {
   });
 
   return (
-    <section id="log" aria-labelledby="log-title" className="relative overflow-hidden bg-bg py-16 md:py-24">
+    <section id="log" aria-labelledby="log-title" className="relative overflow-hidden py-16 md:py-24">
       <div className="mx-auto max-w-5xl px-4 sm:px-8 lg:px-12">
         <HudRule index="004" label={t.log.subtitle} className="mb-8" />
         <h2

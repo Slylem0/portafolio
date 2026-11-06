@@ -27,7 +27,7 @@ export default function Skills() {
     <section
       id="skills"
       aria-labelledby="skills-title"
-      className="relative overflow-hidden bg-bg py-16 md:py-24"
+      className="relative overflow-hidden py-16 md:py-24"
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-8 lg:px-12">
         <HudRule

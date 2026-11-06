@@ -60,7 +60,7 @@ export default function Footer() {
     <footer
       ref={footer}
       id="footer"
-      className="relative overflow-hidden border-t border-bone/20 bg-bg"
+      className="relative overflow-hidden border-t border-bone/20"
     >
       <DitherRule className="h-2" />
       <div className="mx-auto max-w-6xl px-4 py-14 sm:px-8 md:py-20 lg:px-12">

@@ -97,7 +97,8 @@
   body {
     /* Ask for text (monochrome) presentation of emoji-capable glyphs such as ⚠ and ★. */
     font-variant-emoji: text;
-    background: var(--bg);
+    /* Transparent so the fixed starfield (z -10) shows between the root background and the page. */
+    background: transparent;
     color: var(--bone);
     overflow-x: hidden;
   }

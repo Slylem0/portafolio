@@ -67,7 +67,7 @@ export default function TitleCard({
       ref={ref}
       data-reveal={state}
       className={cn(
-        "relative isolate overflow-hidden bg-black text-white",
+        "relative isolate overflow-hidden bg-black/75 text-white",
         className,
       )}
     >
