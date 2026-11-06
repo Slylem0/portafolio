@@ -79,7 +79,7 @@ export default function Sessions() {
   );
 
   return (
-    <section ref={section} id="sessions" aria-labelledby="sessions-title" className="group/sessions relative overflow-hidden bg-bg">
+    <section ref={section} id="sessions" aria-labelledby="sessions-title" className="group/sessions relative overflow-x-clip bg-bg">
       {/* Title panel: raised black slab on a faint dot field */}
       <div className="relative border-y border-bone/15 bg-panel">
         <div aria-hidden="true" className="dither absolute inset-0" />

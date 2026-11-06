@@ -28,7 +28,14 @@ export function initSmoothScroll(): void {
   }
   if (lenis || !canAnimate()) return;
 
-  const l = new Lenis({ anchors: true, lerp: 0.1 });
+  // Anchors land where the fixed navbar does not cover them (the page's scroll-padding-top).
+  const navOffset = () => -(parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0);
+  const l = new Lenis({
+    anchors: { offset: navOffset() },
+    lerp: 0.1,
+    // Omarchy Mode's windows scroll natively (Lenis is stopped there and would swallow the wheel).
+    prevent: (node) => node.closest?.(".om-root") !== null,
+  });
   lenis = l;
   l.on("scroll", ScrollTrigger.update);
   gsap.ticker.add((time) => l.raf(time * 1000));
@@ -51,7 +58,7 @@ export function initSmoothScroll(): void {
     true,
   );
   ScrollTrigger.addEventListener("refresh", () => {
-    if (anchor) l.scrollTo(anchor, { immediate: !l.isScrolling, force: true });
+    if (anchor) l.scrollTo(anchor, { offset: navOffset(), immediate: !l.isScrolling, force: true });
     // Adopt the native position, but never cut short a smooth scroll already under way.
     else if (!l.isScrolling) l.scrollTo(window.scrollY, { immediate: true, force: true });
   });

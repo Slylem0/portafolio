@@ -13,14 +13,32 @@ export default function ScrambleText({ text, durationMs = 900, delayMs = 0, clas
     if (!canAnimate()) return;
     let raf = 0;
     let start = 0;
+    let cancelled = false;
     const tick = (now: number) => {
       if (!start) start = now + delayMs;
       const p = (now - start) / durationMs;
       setShown(p < 0 ? scrambleFrame(text, 0, Math.random) : scrambleFrame(text, p, Math.random));
       if (p < 1) raf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    const run = () => {
+      if (!cancelled) raf = requestAnimationFrame(tick);
+    };
+    // Behind the intro gate nobody sees it: decode the moment the visitor enters (as it fades).
+    const html = document.documentElement;
+    let watch: MutationObserver | undefined;
+    if (html.classList.contains("intro-open")) {
+      watch = new MutationObserver(() => {
+        if (html.classList.contains("intro-open")) return;
+        watch?.disconnect();
+        run();
+      });
+      watch.observe(html, { attributes: true, attributeFilter: ["class"] });
+    } else run();
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf);
+      watch?.disconnect();
+    };
   }, [text, durationMs, delayMs]);
 
   return (
