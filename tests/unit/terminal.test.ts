@@ -1,13 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { runCommand } from "@/components/omarchy/terminal";
+import { complete, runCommand, suggest } from "@/components/omarchy/terminal";
 import { dicts } from "@/i18n";
 
 const run = (input: string, lang: "en" | "es" = "en") => runCommand(input, { lang, t: dicts[lang] });
 
 describe("runCommand", () => {
-  it("help lists all 9 commands", () => {
+  it("help lists every command", () => {
     const text = run("help").lines.join("\n");
-    for (const c of ["help", "whoami", "ls sessions", "cat about.md", "neofetch", "open <n>", "lang en|es", "clear", "exit"])
+    for (const c of ["help", "whoami", "ls sessions", "cat about.md", "neofetch", "open <n>", "lang en|es", "clear", "exit",
+      "triad <q>", "aws architecture", "aws services", "skills", "contact", "theme <name>", "ws <n>", "history"])
       expect(text).toContain(c);
   });
   it("whoami contains Pablo", () => {
@@ -100,5 +101,79 @@ describe("runCommand", () => {
     expect(run("lang fr", "es").lines[0]).toBe("uso: lang en|es");
     expect(run("lang en es", "es").lines[0]).toBe("uso: lang en|es");
     expect(run("lang es", "es").lines[0]).toBe("idioma cambiado a es");
+  });
+});
+
+describe("new commands", () => {
+  it("triad keeps the question's case and asks for the async action", () => {
+    const r = run("TRIAD  Should I hire Pablo?");
+    expect(r.action).toEqual({ type: "triad", question: "Should I hire Pablo?" });
+    expect(r.lines).toEqual([dicts.en.omarchy.terminal.triadAsking]);
+    expect(run("triad").lines).toEqual([dicts.en.omarchy.terminal.usageTriad]);
+    expect(run("triad").action).toBeUndefined();
+  });
+  it("aws architecture draws the real stack, aws services explains it", () => {
+    const arch = run("aws architecture").lines.join("\n");
+    for (const s of ["Amplify", "Lambda", "Bedrock", "DynamoDB", "CloudWatch"]) expect(arch).toContain(s);
+    const svc = run("aws services", "es").lines.join("\n");
+    for (const s of ["Amplify", "Lambda", "Bedrock", "DynamoDB", "CloudWatch", "Budgets"]) expect(svc).toContain(s);
+    expect(run("aws").lines).toEqual([dicts.en.omarchy.terminal.usageAws]);
+    expect(run("aws s3 ls").lines).toEqual([dicts.en.omarchy.terminal.usageAws]);
+  });
+  it("skills prints ASCII bars from the data", () => {
+    const lines = run("skills").lines;
+    const lambda = lines.find((l) => l.includes("AWS Lambda"))!;
+    expect(lambda).toMatch(/#{8}\.{2}\s+80%$/);
+    expect(lines.every((l) => /^[\x20-\x7e]*$/.test(l))).toBe(true);
+  });
+  it("contact lists email, GitHub and LinkedIn", () => {
+    const text = run("contact").lines.join("\n");
+    expect(text).toContain("pnicolasmarin2007@gmail.com");
+    expect(text).toContain("github.com/Slylem0");
+    expect(text).toContain("linkedin.com/in/pablo-nicolas-marin");
+  });
+  it("theme switches the display, ws switches workspace", () => {
+    expect(run("theme inverse").action).toEqual({ type: "theme", theme: "inverse" });
+    expect(run("theme pink").action).toBeUndefined();
+    expect(run("theme pink").lines).toEqual([dicts.en.omarchy.terminal.usageTheme]);
+    expect(run("ws 4").action).toEqual({ type: "workspace", n: 4 });
+    for (const bad of ["ws", "ws 0", "ws 6", "ws x"]) {
+      expect(run(bad).action).toBeUndefined();
+      expect(run(bad).lines).toEqual([dicts.en.omarchy.terminal.usageWs]);
+    }
+  });
+  it("history numbers past commands, oldest first", () => {
+    const r = runCommand("history", { lang: "en", t: dicts.en, history: ["whoami", "help"] });
+    expect(r.lines).toEqual(["  1  help", "  2  whoami"]);
+    expect(run("history").lines).toEqual([dicts.en.omarchy.terminal.historyEmpty]);
+  });
+  it("typos get a did-you-mean", () => {
+    const text = run("neofech").lines.join("\n");
+    expect(text).toContain("neofetch");
+    expect(suggest("neofech")).toBe("neofetch");
+    expect(suggest("trad")).toBe("triad");
+    expect(suggest("xyzzy")).toBeNull();
+    expect(suggest("ls")).toBeNull();
+  });
+});
+
+describe("complete (Tab)", () => {
+  it("completes a unique prefix", () => {
+    expect(complete("neo")).toEqual({ value: "neofetch", options: ["neofetch"] });
+    expect(complete("aws a")).toEqual({ value: "aws architecture", options: ["aws architecture"] });
+    expect(complete("con")).toEqual({ value: "contact", options: ["contact"] });
+  });
+  it("extends to the common prefix and lists the options", () => {
+    const r = complete("aws")!;
+    expect(r.value).toBe("aws ");
+    expect(r.options).toEqual(["aws architecture", "aws services"]);
+    const t = complete("t")!;
+    expect(t.value).toBe("t");
+    expect(t.options).toContain("triad ");
+    expect(t.options).toContain("theme mono");
+  });
+  it("returns null without matches or input", () => {
+    expect(complete("zzz")).toBeNull();
+    expect(complete("")).toBeNull();
   });
 });

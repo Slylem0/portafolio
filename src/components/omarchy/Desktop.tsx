@@ -4,7 +4,6 @@ import { sessions } from "@/data/sessions";
 import AsciiOctahedron from "@/components/ascii/AsciiOctahedron";
 import { keyToAction, type Action } from "./shortcuts";
 import { dwindle, type Rect } from "./tiling";
-import type { TermAction } from "./terminal";
 import TopBar, { WORKSPACES, type WsNum } from "./TopBar";
 import Dock from "./Dock";
 import Window from "./Window";
@@ -13,7 +12,7 @@ import SessionsWin, { SessionDetail } from "./windows/SessionsWin";
 import SkillsWin from "./windows/SkillsWin";
 import LogWin from "./windows/LogWin";
 import TriadWin from "./windows/TriadWin";
-import TerminalWin from "./windows/TerminalWin";
+import TerminalWin, { type TerminalAction } from "./windows/TerminalWin";
 import DisplaySwitchWin, { THEMES, type Theme } from "./windows/DisplaySwitchWin";
 
 type Kind = "about" | "sessions" | "skills" | "triad" | "log" | "terminal" | "display" | "session";
@@ -309,12 +308,14 @@ export default function Desktop({ theme, onTheme, onExit, rootRef }: DesktopProp
   };
 
   const onTermAction = useCallback(
-    (a: Exclude<TermAction, { type: "clear" }>) => {
+    (a: TerminalAction) => {
       if (a.type === "lang") setLang(a.lang);
       else if (a.type === "exit") onExit();
       else if (a.type === "openSession") run({ type: "session", n: a.n });
+      else if (a.type === "theme") onTheme(a.theme);
+      else if (a.type === "workspace") dispatch({ type: "workspace", n: a.n });
     },
-    [setLang, onExit, run],
+    [setLang, onExit, run, onTheme],
   );
 
   const content = (w: Win): ReactNode => {

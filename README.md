@@ -32,7 +32,13 @@ Press the blinking **⚠ EMERGENCY — PRESS ⊞ SUPER** button in the hero or n
 
 Plain keys work only when you're not typing in an input. Browsers swallow some Ctrl chords, like Ctrl+1..5 and Ctrl+Q, and that's why plain keys exist. Inside an input, the first **Esc** leaves the field and the next one exits. The dock has a button for every shortcut, so you don't need a keyboard.
 
-**Terminal commands:** `help`, `whoami`, `ls sessions`, `cat about.md`, `neofetch`, `open <n>` (opens session *n* in a window), `lang en|es`, `clear`, `exit`.
+**Terminal commands:** `help`, `whoami`, `ls sessions`, `cat about.md`, `open <n>` (opens session *n* in a window), `skills` (ASCII sync bars), `contact`, `neofetch`, `lang en|es`, `history`, `clear`, `exit`, plus:
+
+- `triad <question>`: asks the three cores **live on Amazon Bedrock** from the shell and prints each vote and the verdict.
+- `aws architecture` / `aws services`: draws the real AWS stack behind the site and explains each service.
+- `theme mono|inverse|terminal` and `ws <1-5>`: drive the Display Switch and the workspaces from the shell.
+
+Tab completes commands (and lists the options when there are several), typos get a "did you mean", Up/Down browse history and output types itself out.
 
 **TRIAD (workspace 4):** ask a yes/no question of up to 200 characters. Three cores answer:
 

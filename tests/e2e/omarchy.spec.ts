@@ -507,3 +507,75 @@ test.describe("TRIAD", () => {
     await expect(page.getByTestId("omarchy")).toBeVisible();
   });
 });
+
+test.describe("terminal commands", () => {
+  test.skip(({ isMobile }) => isMobile, "desktop keyboard shell");
+  const FAKE = "https://triad.e2e.test/";
+
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript((u) => ((window as unknown as { __TRIAD_URL__: string }).__TRIAD_URL__ = u), FAKE);
+  });
+
+  async function shell(page: Page) {
+    await openDesktop(page);
+    await page.keyboard.press("Control+Enter");
+    const input = page.getByTestId("omarchy-terminal-input");
+    await expect(input).toBeFocused();
+    return input;
+  }
+
+  test("Tab completes, theme re-themes, ws switches workspace", async ({ page }) => {
+    const input = await shell(page);
+    await input.pressSequentially("neo");
+    await page.keyboard.press("Tab");
+    await expect(input).toHaveValue("neofetch");
+    await input.fill("aws");
+    await page.keyboard.press("Tab");
+    await expect(input).toHaveValue("aws ");
+    await expect(page.getByTestId("omarchy-terminal-output").last()).toContainText("aws architecture");
+    await input.fill("theme inverse");
+    await page.keyboard.press("Enter");
+    await expect(page.getByTestId("omarchy")).toHaveAttribute("data-theme", "inverse");
+    await input.fill("ws 3");
+    await page.keyboard.press("Enter");
+    await expect(activeWorkspace(page)).toHaveAttribute("data-workspace", "3");
+  });
+
+  test("aws architecture draws the stack; typos get a suggestion", async ({ page }) => {
+    const input = await shell(page);
+    await input.fill("aws architecture");
+    await page.keyboard.press("Enter");
+    await expect(page.getByTestId("omarchy-terminal-output").last()).toContainText("[ Bedrock ]");
+    await input.fill("neofech");
+    await page.keyboard.press("Enter");
+    await expect(page.getByTestId("omarchy-terminal-output").last()).toContainText("did you mean 'neofetch'?");
+  });
+
+  test("triad <q> asks the backend and prints the vote", async ({ page }) => {
+    const bodies: unknown[] = [];
+    await page.route(`${FAKE}**`, async (route) => {
+      bodies.push(route.request().postDataJSON());
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        headers: { "access-control-allow-origin": "*" },
+        body: JSON.stringify({
+          cores: [
+            { id: "ENGINEER", vote: "YES", line: "Solid serverless track record." },
+            { id: "COWBOY", vote: "YES", line: "He ships, man." },
+            { id: "STUDENT", vote: "NO", line: "I want to see more Go first." },
+          ],
+          verdict: "APPROVED",
+        }),
+      });
+    });
+    const input = await shell(page);
+    await input.fill("triad Should I hire Pablo?");
+    await page.keyboard.press("Enter");
+    const out = page.getByTestId("omarchy-terminal-output").last();
+    await expect(out).toContainText("RESOLUTION: APPROVED 2–1");
+    await expect(out).toContainText("LINK ACTIVE — AWS BEDROCK");
+    await expect(out).toContainText("He ships, man.");
+    expect(bodies[0]).toEqual({ question: "Should I hire Pablo?", lang: "en" });
+  });
+});
