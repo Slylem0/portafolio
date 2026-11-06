@@ -8,7 +8,12 @@ let refreshTimer: ReturnType<typeof setTimeout> | undefined;
 /** Islands hydrate at different times: one refresh after the last of them sets up. */
 function scheduleRefresh() {
   clearTimeout(refreshTimer);
-  refreshTimer = setTimeout(() => ScrollTrigger.refresh(), 100);
+  // Islands hydrate in any order, but pins must be measured top to bottom: a pin higher on the
+  // page adds space every trigger below it has to count. Sort by position, then refresh.
+  refreshTimer = setTimeout(() => {
+    ScrollTrigger.sort();
+    ScrollTrigger.refresh();
+  }, 100);
 }
 
 /**
@@ -17,7 +22,7 @@ function scheduleRefresh() {
  */
 export function useScrollFx<T extends Element>(
   ref: RefObject<T | null>,
-  setup: (ctx: ScrollFxContext<T>) => void,
+  setup: (ctx: ScrollFxContext<T>) => void | (() => void),
   deps: unknown[] = [],
 ): void {
   useEffect(() => {

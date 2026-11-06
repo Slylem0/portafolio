@@ -1,5 +1,8 @@
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 import { useReveal } from "@/lib/useReveal";
+import { ScrollTrigger } from "@/lib/motion/gsap";
+import { useScrollFx } from "@/lib/motion/useScrollFx";
 
 const SEGMENTS = 20;
 
@@ -11,15 +14,47 @@ interface SyncBarProps {
   tag?: string;
   /** Accessible name; defaults to `name`. */
   label?: string;
+  /** Tie the fill and the number to the scroll position instead of a one-shot reveal. */
+  scrub?: boolean;
   className?: string;
 }
 
 /** Segmented sync-ratio meter. Rendered filled on the server; animates in on reveal when motion is allowed. */
-export default function SyncBar({ name, sync, tag, label, className }: SyncBarProps) {
+export default function SyncBar({
+  name,
+  sync,
+  tag,
+  label,
+  scrub,
+  className,
+}: SyncBarProps) {
   const [ref, state] = useReveal<HTMLDivElement>(0.4);
   const value = Math.max(0, Math.min(100, Math.round(sync)));
   const lit = Math.round((value / 100) * SEGMENTS);
-  const shown = state === "armed" ? 0 : lit;
+  // Scrubbed: fraction of the bar's scroll window passed (null until armed: full static render).
+  const [progress, setProgress] = useState<number | null>(null);
+  useScrollFx(
+    ref,
+    ({ el }) => {
+      if (!scrub) return;
+      const st = ScrollTrigger.create({
+        trigger: el,
+        start: "top 90%",
+        end: "top 60%",
+        onUpdate: (self) => setProgress(self.progress),
+        onRefresh: (self) => setProgress(self.progress),
+      });
+      return () => st.kill();
+    },
+    [scrub],
+  );
+  const scrubbing = scrub && progress !== null;
+  const shown = scrubbing
+    ? Math.round(lit * progress)
+    : state === "armed"
+      ? 0
+      : lit;
+  const number = scrubbing ? Math.round(value * progress) : value;
 
   return (
     <div
@@ -36,11 +71,13 @@ export default function SyncBar({ name, sync, tag, label, className }: SyncBarPr
         <span className="flex min-w-0 items-baseline gap-2 text-bone/90">
           <span className="truncate">{name}</span>
           {tag && (
-            <span className="shrink-0 border border-dashed border-bone/50 px-1 text-[9px] tracking-widest text-bone/80 uppercase">{tag}</span>
+            <span className="shrink-0 border border-dashed border-bone/50 px-1 text-[9px] tracking-widest text-bone/80 uppercase">
+              {tag}
+            </span>
           )}
         </span>
         <span className="shrink-0 font-medium tabular-nums tracking-wider text-bone">
-          {value}
+          {number}
           <span className="text-bone/65">%</span>
         </span>
       </div>
@@ -52,7 +89,11 @@ export default function SyncBar({ name, sync, tag, label, className }: SyncBarPr
               "sync-seg flex-1",
               i < shown ? "bg-bone" : "bg-bone/12",
             )}
-            style={state === "revealed" ? { transitionDelay: `${i * 35}ms` } : undefined}
+            style={
+              state === "revealed" && !scrubbing
+                ? { transitionDelay: `${i * 35}ms` }
+                : undefined
+            }
           />
         ))}
       </div>

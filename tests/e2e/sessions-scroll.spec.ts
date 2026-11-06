@@ -15,6 +15,8 @@ const transformOf = (page: Page) =>
   page.getByTestId("sessions-track").evaluate((n) => getComputedStyle(n).transform);
 
 async function reachTrack(page: Page) {
+  // Wait for the Sessions island to hydrate (it hydrates on idle; slower under load).
+  await page.waitForSelector("astro-island[component-url*='Sessions']:not([ssr])", { state: "attached" });
   await page.locator("#sessions-title").scrollIntoViewIfNeeded();
   await page.mouse.move(640, 400);
   await page.mouse.wheel(0, 600);

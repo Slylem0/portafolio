@@ -52,7 +52,8 @@ export function initSmoothScroll(): void {
   );
   ScrollTrigger.addEventListener("refresh", () => {
     if (anchor) l.scrollTo(anchor, { immediate: !l.isScrolling, force: true });
-    else l.scrollTo(window.scrollY, { immediate: true, force: true });
+    // Adopt the native position, but never cut short a smooth scroll already under way.
+    else if (!l.isScrolling) l.scrollTo(window.scrollY, { immediate: true, force: true });
   });
 
   const html = document.documentElement;
