@@ -12,6 +12,7 @@ I'm Pablo Nicolás Marín, a Systems Engineering student at Universidad del Vall
 - **Skills:** grouped skill bars ("sync ratio").
 - **Sessions:** seven projects as wanted posters, each with its stack and links.
 - **Mission Log:** certifications, roles, hackathons and open-source work.
+- **Scroll experience:** smooth scroll (Lenis + GSAP ScrollTrigger). The hero name decodes and the octahedron spins up as you scroll; the About bio lights up word by word; Sessions pins and slides the posters sideways (tilting toward the mouse); skill bars fill with the scroll under a running stack band; the Mission Log line draws itself; the farewell wipes in at the end. A HUD cursor and a `SYNC %` progress bar follow you. With reduced motion or without JS, every section shows as a still layout.
 - **EN / ES** toggle (the choice is remembered), mobile layout at 390 px, and `prefers-reduced-motion` support.
 
 ## How to find the secret: Omarchy Mode
