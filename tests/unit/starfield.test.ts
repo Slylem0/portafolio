@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   approach,
   burstEnvelope,
-  crossSegments,
+  evaCross,
   nearest,
   pointerBoost,
   spawnShootingStar,
@@ -67,10 +67,12 @@ describe("twinkle / parallax / cross / count", () => {
     const near = 400 - parallaxY(0.5, 1, 100, 800);
     expect(near).toBeGreaterThan(far);
   });
-  it("cross has a longer vertical beam than its crossbar, set above center", () => {
-    const [[, y1, , y2], [x1, by, x2]] = crossSegments(0, 0, 10);
-    expect(y2 - y1).toBeGreaterThan(x2 - x1);
-    expect(by).toBeLessThan(0);
+  it("Eva cross: long pillar below, short above, crossbar wider than the upper arm", () => {
+    const c = evaCross(100);
+    expect(c.down).toBeGreaterThan(c.up * 3);
+    expect(c.bar).toBeGreaterThan(c.up);
+    expect(c.up + c.down).toBeCloseTo(100);
+    expect(evaCross(4).core).toBe(1);
   });
   it("star count is bounded", () => {
     expect(starCount(390, 844)).toBe(90);

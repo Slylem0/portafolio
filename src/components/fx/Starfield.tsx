@@ -4,7 +4,7 @@ import {
   approach,
   burstEnvelope,
   clamp01,
-  crossSegments,
+  evaCross,
   generateStars,
   mulberry32,
   nearest,
@@ -54,9 +54,83 @@ function makeConstellations(): Constellation[] {
   });
 }
 
+type Sprite = { img: HTMLCanvasElement; ax: number; ay: number; height: number };
+
+/**
+ * Pre-rendered Eva cross of light (drawn once, then stamped with drawImage). Like the Angel
+ * detonations: each arm is a column of almost constant width whose edges glow off softly and
+ * which only fades out near its tip, with a small hot flare where the beams meet.
+ */
+function makeEvaSprite(height: number): Sprite | null {
+  const { up, down, bar, core } = evaCross(height);
+  const half = core * 3.2; // soft half-width of a beam, glow included
+  const img = document.createElement("canvas");
+  img.width = Math.ceil(bar * 2 + half * 2);
+  img.height = Math.ceil(up + down + half * 2);
+  const g = img.getContext("2d");
+  if (!g) return null;
+  const ax = img.width / 2;
+  const ay = half + up;
+
+  /** One beam on its own canvas: soft across its width, fading along its length, then added. */
+  const beam = (len: number, vertical: boolean, fadeFrom: number) => {
+    const L = Math.max(1, Math.ceil(len));
+    const W = Math.max(2, Math.ceil(half * 2));
+    const c = document.createElement("canvas");
+    c.width = L;
+    c.height = W;
+    const b = c.getContext("2d");
+    if (!b) return null;
+    const across = b.createLinearGradient(0, 0, 0, W);
+    across.addColorStop(0, `rgba(${BONE},0)`);
+    across.addColorStop(0.3, `rgba(${BONE},0.12)`);
+    across.addColorStop(0.42, `rgba(${BONE},0.5)`);
+    across.addColorStop(0.5, `rgba(${BONE},1)`);
+    across.addColorStop(0.58, `rgba(${BONE},0.5)`);
+    across.addColorStop(0.7, `rgba(${BONE},0.12)`);
+    across.addColorStop(1, `rgba(${BONE},0)`);
+    b.fillStyle = across;
+    b.fillRect(0, 0, L, W);
+    // Lengthwise: full strength from the intersection, fading out toward the tip.
+    b.globalCompositeOperation = "destination-in";
+    const along = b.createLinearGradient(0, 0, L, 0);
+    along.addColorStop(0, "rgba(0,0,0,1)");
+    along.addColorStop(fadeFrom, "rgba(0,0,0,0.85)");
+    along.addColorStop(1, "rgba(0,0,0,0)");
+    b.fillStyle = along;
+    b.fillRect(0, 0, L, W);
+    return { c, W, vertical };
+  };
+
+  g.globalCompositeOperation = "lighter";
+  const put = (len: number, dir: "up" | "down" | "left" | "right", fadeFrom: number) => {
+    const bm = beam(len, dir === "up" || dir === "down", fadeFrom);
+    if (!bm) return;
+    g.save();
+    g.translate(ax, ay);
+    g.rotate({ right: 0, down: Math.PI / 2, left: Math.PI, up: -Math.PI / 2 }[dir]);
+    g.drawImage(bm.c, 0, -bm.W / 2);
+    g.restore();
+  };
+  put(up, "up", 0.45);
+  put(down, "down", 0.55);
+  put(bar, "left", 0.5);
+  put(bar, "right", 0.5);
+
+  // Small hot flare where the beams meet.
+  const r = half * 2;
+  const flare = g.createRadialGradient(ax, ay, 0, ax, ay, r);
+  flare.addColorStop(0, `rgba(${BONE},0.7)`);
+  flare.addColorStop(0.3, `rgba(${BONE},0.15)`);
+  flare.addColorStop(1, `rgba(${BONE},0)`);
+  g.fillStyle = flare;
+  g.fillRect(ax - r, ay - r, r * 2, r * 2);
+  return { img, ax, ay, height };
+}
+
 /**
  * Fixed sky behind the page. A third of it is there from the first frame and the rest fills in
- * with the scroll: dots, thin Eva crosses, constellations and, at the very end, a tall cross of
+ * with the scroll: dots, Evangelion crosses of light, constellations and, at the very end, a tall cross of
  * light. It reacts to the visitor: stars drift against the pointer (or the phone's tilt) and brighten near it, NERV
  * target lines lock onto the closest ones, fast scrolling stretches them into hyperspace
  * streaks, clicking empty space detonates an Eva cross, every section that enters the screen
@@ -74,6 +148,9 @@ export default function Starfield() {
     const fine = animate && hasFinePointer();
     const rnd = mulberry32(Date.now() & 0xffff);
     const constellations = makeConstellations();
+    // A small sprite for the sky's crosses and a big one for detonations and the finale.
+    const small = makeEvaSprite(72);
+    const big = makeEvaSprite(560);
 
     let stars: Star[] = [];
     let w = 0;
@@ -121,53 +198,34 @@ export default function Starfield() {
       ctx.lineTo(x2, y2);
     };
 
-    /** A glowing Eva cross (beam + high crossbar) of height `size` at (x, y), plus a shock ring. */
+    /**
+     * Stamp an Eva cross `height` px tall anchored at its intersection (x, y). `widen` (0–1)
+     * scales the crossbar on its own, so a detonation can shoot up before it spreads.
+     */
+    const drawCross = (x: number, y: number, height: number, alpha: number, widen = 1) => {
+      const sp = height > 120 ? big : small;
+      if (!sp || alpha <= 0 || height <= 0) return;
+      const k = height / sp.height;
+      const kx = k * widen;
+      ctx.globalAlpha = Math.min(1, alpha);
+      ctx.drawImage(sp.img, x - sp.ax * kx, y - sp.ay * k, sp.img.width * kx, sp.img.height * k);
+    };
+
+    /** A detonation: the pillar of light shoots up, the crossbar spreads, a shock ring expands. */
     const drawBurst = (b: Burst, t: number) => {
       const age = t - b.born;
       const { scale, alpha } = burstEnvelope(age, b.life);
       if (alpha <= 0) return;
       const a = alpha * b.power;
-      const H = b.size * scale;
-      const top = b.y - H * 0.62;
-      const bottom = b.y + H * 0.38;
-      const barY = b.y - H * 0.3;
-      const barW = H * 0.3;
-      const glow = Math.max(6, 22 * scale);
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
-      // Soft beams.
-      let g = ctx.createLinearGradient(b.x - glow, 0, b.x + glow, 0);
-      g.addColorStop(0, `rgba(${BONE},0)`);
-      g.addColorStop(0.5, `rgba(${BONE},${0.22 * a})`);
-      g.addColorStop(1, `rgba(${BONE},0)`);
-      ctx.fillStyle = g;
-      ctx.fillRect(b.x - glow, top, glow * 2, bottom - top);
-      g = ctx.createLinearGradient(0, barY - glow * 0.7, 0, barY + glow * 0.7);
-      g.addColorStop(0, `rgba(${BONE},0)`);
-      g.addColorStop(0.5, `rgba(${BONE},${0.22 * a})`);
-      g.addColorStop(1, `rgba(${BONE},0)`);
-      ctx.fillStyle = g;
-      ctx.fillRect(b.x - barW, barY - glow * 0.7, barW * 2, glow * 1.4);
-      // Hot core.
-      ctx.globalAlpha = 0.85 * a;
+      drawCross(b.x, b.y, b.size * scale, a, Math.max(0.15, scale * scale));
+      ctx.globalAlpha = 0.25 * a;
       ctx.strokeStyle = `rgb(${BONE})`;
-      ctx.lineWidth = 1.25;
-      ctx.beginPath();
-      line(b.x, top, b.x, bottom);
-      line(b.x - barW, barY, b.x + barW, barY);
-      ctx.stroke();
-      // Shock ring and a flash at the origin.
-      ctx.globalAlpha = 0.3 * a;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.arc(b.x, b.y, 12 + age * b.size * 0.35, 0, Math.PI * 2);
       ctx.stroke();
-      const f = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, 60 * scale + 10);
-      f.addColorStop(0, `rgba(${BONE},${0.35 * a})`);
-      f.addColorStop(1, `rgba(${BONE},0)`);
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = f;
-      ctx.fillRect(b.x - 80, b.y - 80, 160, 160);
       ctx.restore();
     };
 
@@ -192,15 +250,9 @@ export default function Starfield() {
         const streak = warpLength(vel, s.depth) * r;
         if (r > 0.6) drawn.push([x, y]);
         if (s.cross) {
-          const segs = crossSegments(x, y, s.size * (0.6 + 0.4 * r) * (1 + boost * 0.6));
-          ctx.beginPath();
-          for (const [x1, y1, x2, y2] of segs) line(x1, y1, x2, y2);
-          ctx.globalAlpha = a * 0.18;
-          ctx.lineWidth = 4;
-          ctx.stroke();
-          ctx.globalAlpha = a;
-          ctx.lineWidth = 1;
-          ctx.stroke();
+          ctx.globalCompositeOperation = "lighter";
+          drawCross(x, y, s.size * 4.5 * (0.6 + 0.4 * r) * (1 + boost * 0.7), a);
+          ctx.globalCompositeOperation = "source-over";
         } else if (streak > 1) {
           // Hyperspace: the star leaves a trail opposite to its motion.
           ctx.globalAlpha = a * 0.8;
@@ -301,28 +353,12 @@ export default function Starfield() {
       // The cross of light rising over the horizon at the end of the page.
       const rise = animate ? smoothstep(0.78, 1, p) : 0;
       if (rise > 0) {
-        const cx = w * 0.5 - offX * 8;
-        const top = h * (1 - 0.85 * rise);
-        const barY = top + (h - top) * 0.28;
-        const barW = Math.min(w * 0.42, 520) * rise;
+        const H = h * 1.05 * rise;
         const breathe = 0.85 + 0.15 * Math.sin(t * 1.3);
-        ctx.globalAlpha = 0.11 * rise * breathe;
-        const beam = ctx.createLinearGradient(cx - 40, 0, cx + 40, 0);
-        beam.addColorStop(0, `rgba(${BONE},0)`);
-        beam.addColorStop(0.5, `rgba(${BONE},1)`);
-        beam.addColorStop(1, `rgba(${BONE},0)`);
-        ctx.fillStyle = beam;
-        ctx.fillRect(cx - 40, top, 80, h - top);
-        const bar = ctx.createLinearGradient(0, barY - 22, 0, barY + 22);
-        bar.addColorStop(0, `rgba(${BONE},0)`);
-        bar.addColorStop(0.5, `rgba(${BONE},1)`);
-        bar.addColorStop(1, `rgba(${BONE},0)`);
-        ctx.fillStyle = bar;
-        ctx.fillRect(cx - barW, barY - 22, barW * 2, 44);
-        ctx.globalAlpha = 0.25 * rise;
-        ctx.fillStyle = `rgb(${BONE})`;
-        ctx.fillRect(cx - 0.5, top, 1, h - top);
-        ctx.fillRect(cx - barW, barY - 0.5, barW * 2, 1);
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        drawCross(w * 0.5 - offX * 8, h + H * 0.12 - H * evaCross(1).down, H, 0.32 * rise * breathe, rise);
+        ctx.restore();
       }
 
       for (const b of bursts) drawBurst(b, t);

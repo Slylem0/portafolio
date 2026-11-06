@@ -88,18 +88,20 @@ export function parallaxY(y: number, depth: number, scroll: number, height: numb
 }
 
 /**
- * Eva cross: a long vertical beam and a shorter crossbar set high, like the blasts in the show.
- * Returns two segments [x1, y1, x2, y2] centered on (x, y) with the given arm size.
+ * Evangelion cross of light, as in the Angel detonations: a tall pillar whose wide crossbar sits
+ * high, with every arm tapering into light. Lengths are fractions of the total height, measured
+ * from the intersection, which is the anchor point.
  */
-export function crossSegments(x: number, y: number, size: number): [number, number, number, number][] {
-  const up = size * 1.1;
-  const down = size * 1.9;
-  const bar = size * 0.85;
-  const barY = y - size * 0.45;
-  return [
-    [x, y - up, x, y + down],
-    [x - bar, barY, x + bar, barY],
-  ];
+export const EVA_CROSS = { up: 0.22, down: 0.78, bar: 0.3, core: 0.035 } as const;
+
+/** Arm lengths (px) of an Eva cross `height` px tall, measured from the intersection. */
+export function evaCross(height: number) {
+  return {
+    up: height * EVA_CROSS.up,
+    down: height * EVA_CROSS.down,
+    bar: height * EVA_CROSS.bar,
+    core: Math.max(1, height * EVA_CROSS.core),
+  };
 }
 
 /** Star count for a viewport: denser on big screens, capped so phones stay light. */
