@@ -2,6 +2,10 @@
 
 **Live:** https://main.dx1vkp1smlyu7.amplifyapp.com
 
+![Omarchy Mode demo: boot, the terminal drawing the AWS stack, TRIAD answering live from Amazon Bedrock, and the A.T. Field](docs/demo.gif)
+
+**Demo video (45 s):** [docs/demo.mp4](docs/demo.mp4)
+
 My portfolio for the AWS Student Builder Challenge "Build Your Tech Superpower". It looks like an Evangelion × Cowboy Bebop HUD, and it hides a Hyprland-style desktop where three AI cores, running on Amazon Bedrock, vote on your questions.
 
 I'm Pablo Nicolás Marín, a Systems Engineering student at Universidad del Valle (Buga, Colombia), AWS Certified Cloud Practitioner, and Partnerships & Academy Lead at the AWS Student Builder Group Univalle.

@@ -2,6 +2,7 @@
 
 **Live site:** https://main.dx1vkp1smlyu7.amplifyapp.com
 **Code:** https://github.com/Slylem0/portafolio
+**Demo video (45 s):** https://github.com/Slylem0/portafolio/blob/main/docs/demo.mp4
 
 ## Intro
 
