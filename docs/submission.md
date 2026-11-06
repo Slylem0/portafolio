@@ -62,6 +62,8 @@ I'm Pablo Nicolás Marín, a Systems Engineering student at Universidad del Vall
 
 ## AWS architecture and services
 
+![AWS architecture diagram](architecture.png)
+
 ```text
 Visitor ─▶ Amplify Hosting (CDN, HTTPS) ─▶ static Astro site
               │

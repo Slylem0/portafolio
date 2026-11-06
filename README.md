@@ -61,6 +61,8 @@ Each core gives YES or NO plus one line, and a banner shows the result, for exam
 
 ## Architecture
 
+![AWS architecture: Amplify Hosting and CI/CD, the TRIAD Lambda, Amazon Bedrock, DynamoDB and CloudWatch in us-east-1](docs/architecture.png)
+
 ```mermaid
 flowchart LR
   V([Visitor browser])
