@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { openOmarchy } from "@/components/omarchy/events";
 import { SECTIONS as ITEMS } from "@/data/sections";
 import { HintLabel, useCoarsePointer } from "@/components/ui/OmarchyHint";
+import { initSmoothScroll } from "@/lib/motion/lenis";
 
 const focusRing =
   "outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bone";
@@ -12,6 +13,9 @@ export default function Navbar() {
   const { lang, t, setLang } = useLang();
   const [open, setOpen] = useState(false);
   const coarse = useCoarsePointer();
+
+  // The navbar hydrates first on every page load: it owns the page-wide smooth scroll.
+  useEffect(() => initSmoothScroll(), []);
 
   // Close the mobile panel on Escape or when the viewport grows past the breakpoint.
   useEffect(() => {
