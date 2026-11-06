@@ -14,7 +14,8 @@
   --om-accent-2: #a3a3a3;
   --om-bg: #0a0a0a;
   --om-win-bg: rgb(10 10 10 / 0.94);
-  --om-glass: rgb(8 8 8 / 0.62);
+  --om-glass: rgb(8 8 8 / 0.45);
+  --om-glass-term: rgb(8 8 8 / 0.22);
   --om-inactive: #404040;
   --om-muted: #a3a3a3;
 }
@@ -28,7 +29,8 @@
   --om-accent-2: #525252;
   --om-bg: #f5f5f5;
   --om-win-bg: rgb(250 250 250 / 0.96);
-  --om-glass: rgb(250 250 250 / 0.8);
+  --om-glass: rgb(250 250 250 / 0.7);
+  --om-glass-term: rgb(250 250 250 / 0.55);
   --om-inactive: #a3a3a3;
   --om-muted: #525252;
 }
@@ -40,7 +42,8 @@
   --om-accent-2: #d4d4d4;
   --om-bg: #000000;
   --om-win-bg: rgb(0 0 0 / 0.97);
-  --om-glass: rgb(0 0 0 / 0.68);
+  --om-glass: rgb(0 0 0 / 0.5);
+  --om-glass-term: rgb(0 0 0 / 0.28);
   --om-inactive: #737373;
   --om-muted: #b3b3b3;
   font-family: var(--font-mono);
@@ -101,8 +104,14 @@
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .om-win-inner {
     background: var(--om-glass);
-    -webkit-backdrop-filter: blur(5px);
-    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
+  /* The terminal is almost clear glass: the live sky stays visible behind the shell. */
+  .om-win[data-kind="terminal"] .om-win-inner {
+    background: var(--om-glass-term);
+    -webkit-backdrop-filter: blur(1.5px);
+    backdrop-filter: blur(1.5px);
   }
 }
 
