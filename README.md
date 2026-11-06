@@ -6,6 +6,17 @@ My portfolio for the AWS Student Builder Challenge "Build Your Tech Superpower".
 
 I'm Pablo Nicolás Marín, a Systems Engineering student at Universidad del Valle (Buga, Colombia), AWS Certified Cloud Practitioner, and Partnerships & Academy Lead at the AWS Student Builder Group Univalle.
 
+## Screenshots
+
+| | |
+|---|---|
+| ![Landing page](docs/screenshots/01-hero-desktop.png) | ![Omarchy Mode terminal](docs/screenshots/05-desktop-terminal.png) |
+| The landing page and its ASCII octahedron. | Omarchy Mode: tiling windows and a shell that draws the AWS stack. |
+| ![TRIAD on Amazon Bedrock](docs/screenshots/07-triad-online.png) | ![Living sky](docs/screenshots/18-living-sky.png) |
+| TRIAD: three cores vote through Amazon Nova Lite. | The living sky: Evangelion crosses of light behind the page. |
+
+More captures (mobile, boot sequence, Display Switch, offline mode, TRIAD from the terminal) are in [`docs/screenshots/`](docs/screenshots/).
+
 ## What's on the site
 
 - **About:** who I am, styled as an episode title card and a pilot dossier.

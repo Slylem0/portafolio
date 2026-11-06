@@ -37,7 +37,7 @@ I'm Pablo Nicolás Marín, a Systems Engineering student at Universidad del Vall
 
 ## Screenshots
 
-<!-- Capture each image into docs/screenshots/ with the exact file name below. Delete this comment before posting. -->
+<!-- 1–8, 17 and 18 are captured from the live site. Still to capture from the AWS console: 9–15 (and 16, Lighthouse). Delete this comment before posting. -->
 
 | # | File | What to capture | Suggested caption |
 |---|---|---|---|
@@ -45,8 +45,8 @@ I'm Pablo Nicolás Marín, a Systems Engineering student at Universidad del Vall
 | 2 | `docs/screenshots/02-sessions-desktop.png` | Sessions section with the wanted posters | Seven projects as Bebop-style wanted posters, each with its stack and links. |
 | 3 | `docs/screenshots/03-mobile.png` | Home page on a phone (or DevTools at 390×844), menu open | Mobile at 390 px: no horizontal scroll, full navigation. |
 | 4 | `docs/screenshots/04-boot.png` | The red emergency boot screen ("PATTERN DETECTED: BUILDER") | Pressing Super starts an emergency boot sequence. |
-| 5 | `docs/screenshots/05-desktop-terminal.png` | Omarchy desktop with several tiled windows and a terminal after `neofetch` | Omarchy Mode: Hyprland-style dwindle tiling and a working terminal. |
-| 6 | `docs/screenshots/06-display-switch.png` | The Display Switch window with the Bebop theme applied | Display Switch re-themes the desktop, a nod to my open-source Omarchy plugin. |
+| 5 | `docs/screenshots/05-desktop-terminal.png` | Omarchy desktop with the About window and a terminal after `neofetch` and `aws architecture` | Omarchy Mode: Hyprland-style tiling and a working terminal that draws the real AWS stack behind the site. |
+| 6 | `docs/screenshots/06-display-switch.png` | The Display Switch window with the Inverse theme applied | Display Switch re-themes the desktop, a nod to my open-source Omarchy plugin. |
 | 7 | `docs/screenshots/07-triad-online.png` | TRIAD showing three voted cores, the verdict banner and "LINK ACTIVE — AWS BEDROCK" | TRIAD: three cores answer through Amazon Nova Lite, and the verdict is computed in code. |
 | 8 | `docs/screenshots/08-triad-offline.png` | TRIAD in "LINK LOST — LOCAL MODE" (DevTools → Network → Offline, then ask) | If the backend is unreachable, TRIAD answers from a local pool instead of breaking. |
 | 9 | `docs/screenshots/09-amplify-build.png` | Amplify console: the `main` branch with a successful build (Backend + Frontend steps) | Every push to main deploys both the backend and the site through Amplify Hosting. |
@@ -57,6 +57,8 @@ I'm Pablo Nicolás Marín, a Systems Engineering student at Universidad del Vall
 | 14 | `docs/screenshots/14-bedrock-access.png` | Bedrock console: model access showing Amazon Nova Lite as granted in us-east-1 | Amazon Nova Lite enabled in us-east-1. |
 | 15 | `docs/screenshots/15-budget.png` | AWS Budgets: the `portafolio-monthly-5usd` monthly cost budget with its email alerts | A USD 5/month budget alert as the final cost guard. |
 | 16 | `docs/screenshots/16-lighthouse.png` | Lighthouse report for the live URL (desktop). Re-run Lighthouse on the live URL for this capture. | Lighthouse: performance, accessibility, best practices and SEO. |
+| 17 | `docs/screenshots/17-terminal-triad.png` | Terminal after `triad <question>`: three votes and the verdict | TRIAD from the shell: `triad <question>` calls Lambda → Bedrock and prints each core's vote. |
+| 18 | `docs/screenshots/18-living-sky.png` | End of the page: the starfield and the cross of light behind the farewell | The living sky: Evangelion crosses of light that fill in with the scroll and react to the mouse and clicks. |
 
 ## AWS architecture and services
 
