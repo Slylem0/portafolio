@@ -40,7 +40,7 @@ Press the blinking **⚠ EMERGENCY — PRESS ⊞ SUPER** button in the hero or n
 | Normal page | Click the hint, **Super** (Windows/Meta key), or **Ctrl+K** / **Cmd+K** | Open Omarchy Mode |
 | Desktop | **T** or **Enter** (also Super/Ctrl+Enter) | Open a terminal |
 | Desktop | **1**–**5** (also Super/Ctrl+1..5) | Switch workspace: 1 About, 2 Sessions, 3 Skills, 4 TRIAD, 5 Log |
-| Desktop | **P** (also Super/Ctrl+P) | Display Switch: re-theme the desktop (Eva / Bebop / Omarchy) |
+| Desktop | **P** (also Super/Ctrl+P) | Display Switch: re-theme the desktop (Mono / Inverse / Terminal) |
 | Desktop | **Q** (also Super/Ctrl+Q) | Close the focused window |
 | Desktop | **Esc** or **Ctrl+K** | Exit back to the page, at the same scroll position |
 | Mobile (< 768 px) | Dock buttons or horizontal swipe | One fullscreen window at a time |
