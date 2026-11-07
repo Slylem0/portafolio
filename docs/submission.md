@@ -38,8 +38,6 @@ I'm Pablo Nicolás Marín, a Systems Engineering student at Universidad del Vall
 
 ## Screenshots
 
-<!-- 1–8, 17 and 18 are captured from the live site. Still to capture from the AWS console: 9–15 (and 16, Lighthouse). Delete this comment before posting. -->
-
 | # | File | What to capture | Suggested caption |
 |---|---|---|---|
 | 1 | `docs/screenshots/01-hero-desktop.png` | Home page at 1280 px wide: ASCII octahedron, name, hint button | The landing page: an original ASCII octahedron and the emergency hint that leads to Omarchy Mode. |
@@ -50,14 +48,11 @@ I'm Pablo Nicolás Marín, a Systems Engineering student at Universidad del Vall
 | 6 | `docs/screenshots/06-display-switch.png` | The Display Switch window with the Inverse theme applied | Display Switch re-themes the desktop, a nod to my open-source Omarchy plugin. |
 | 7 | `docs/screenshots/07-triad-online.png` | TRIAD showing three voted cores, the verdict banner and "LINK ACTIVE — AWS BEDROCK" | TRIAD: three cores answer through Amazon Nova Lite, and the verdict is computed in code. |
 | 8 | `docs/screenshots/08-triad-offline.png` | TRIAD in "LINK LOST — LOCAL MODE" (DevTools → Network → Offline, then ask) | If the backend is unreachable, TRIAD answers from a local pool instead of breaking. |
-| 9 | `docs/screenshots/09-amplify-build.png` | Amplify console: the `main` branch with a successful build (Backend + Frontend steps) | Every push to main deploys both the backend and the site through Amplify Hosting. |
-| 10 | `docs/screenshots/10-lambda.png` | Lambda console, captured from the production stack (`amplify-dx1vkp1smlyu7-main-…`): the `triad` function's Configuration → Function URL (CORS) and General configuration (Node.js 22, 15 s) | The TRIAD Lambda: Node.js 22 behind a Function URL that only accepts the site's origin. |
-| 11 | `docs/screenshots/11-iam-policy.png` | IAM: the Lambda role's inline policy (InvokeModel + UpdateItem) | Least privilege: the function can call one model and update one table, nothing else. |
-| 12 | `docs/screenshots/12-dynamodb.png` | DynamoDB: the `TriadUsage` table's items (hashed keys, `count`, `ttl`) | The rate limiter: one counter per hashed IP per hour, deleted by TTL. |
-| 13 | `docs/screenshots/13-cloudwatch.png` | CloudWatch Logs: the triad log group with several JSON log lines | One structured line per request (status, length, latency), never the question text. |
-| 14 | `docs/screenshots/14-bedrock-access.png` | Bedrock console: model access showing Amazon Nova Lite as granted in us-east-1 | Amazon Nova Lite enabled in us-east-1. |
-| 15 | `docs/screenshots/15-budget.png` | AWS Budgets: the `portafolio-monthly-5usd` monthly cost budget with its email alerts | A USD 5/month budget alert as the final cost guard. |
-| 16 | `docs/screenshots/16-lighthouse.png` | Lighthouse report for the live URL (desktop). Re-run Lighthouse on the live URL for this capture. | Lighthouse: performance, accessibility, best practices and SEO. |
+| 9 | `docs/screenshots/09-amplify-build.png` | Amplify console: the `main` branch, deployment 27 succeeded (Build + Deploy) | Every push to main deploys both the backend and the site through Amplify Hosting. |
+| 10 | `docs/screenshots/10-lambda.png` | Lambda console: the production `triadlambda` function and its Function URL in us-east-1 | The TRIAD Lambda, deployed by the Amplify stack and reachable through a Function URL. |
+| 11 | `docs/screenshots/11-iam-policy.png` | IAM: the Lambda role with only the basic execution role and one inline policy | Least privilege: one inline policy that lets the function call one model and update one table, nothing else. |
+| 12 | `docs/screenshots/12-dynamodb.png` | DynamoDB: the `TriadUsage` table (partition key `pk`, on-demand) | The rate limiter table: one counter per hashed IP per hour, on demand. Empty here because TTL already deleted the old counters. |
+| 13 | `docs/screenshots/13-cloudwatch.png` | CloudWatch Logs: a TRIAD request with its JSON log line | One structured line per request (`status`, `qLen`, `lang`, `ms`), never the question text. |
 | 17 | `docs/screenshots/17-terminal-triad.png` | Terminal after `triad <question>`: three votes and the verdict | TRIAD from the shell: `triad <question>` calls Lambda → Bedrock and prints each core's vote. |
 | 18 | `docs/screenshots/18-living-sky.png` | End of the page: the starfield and the cross of light behind the farewell | The living sky: Evangelion crosses of light that fill in with the scroll and react to the mouse and clicks. |
 
